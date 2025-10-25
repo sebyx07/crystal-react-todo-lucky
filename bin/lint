@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Lint and format Crystal code
+# By default, automatically formats code
+# Use --check to only check without modifying files
+#
+# Usage:
+#   bin/lint              # Format all Crystal files (autocorrect)
+#   bin/lint --check      # Check formatting without modifying files
+
+CHECK_ONLY=false
+
+# Parse arguments
+for arg in "$@"; do
+  case $arg in
+    --check)
+      CHECK_ONLY=true
+      shift
+      ;;
+  esac
+done
+
+echo "🔍 Running Crystal formatter..."
+
+if [ "$CHECK_ONLY" = true ]; then
+  echo "   Mode: Check only (no modifications)"
+  docker compose run --rm lucky crystal tool format --check src spec
+  EXIT_CODE=$?
+
+  if [ $EXIT_CODE -eq 0 ]; then
+    echo "✅ All files are properly formatted"
+  else
+    echo "❌ Some files need formatting. Run 'bin/lint' to fix."
+  fi
+
+  exit $EXIT_CODE
+else
+  echo "   Mode: Auto-format (will modify files)"
+  docker compose run --rm lucky crystal tool format src spec
+  echo "✅ Files formatted successfully"
+fi

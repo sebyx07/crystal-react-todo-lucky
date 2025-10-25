@@ -1,0 +1,55 @@
+# Crystal
+/docs/
+/lib/
+/.shards/
+*.dwarf
+start_server
+*.local.cr
+
+# Keep bin/ scripts (unignore)
+!/bin/
+
+# Environment files (keep templates)
+.env
+.env.local
+.env.*.local
+!.env.development.local  # Keep this for new devs
+
+# Compiled assets
+/tmp/public/js
+/public/css
+/public/mix-manifest.json
+
+# Node
+/node_modules
+yarn-error.log
+npm-debug.log*
+
+# Editor / IDE (keep .vscode for team)
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+/log/
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Temporary files
+/tmp/
+/coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keep bin/ scripts for developers
+!bin/dev
+!bin/spec
+!bin/lint
+!bin/setup-vscode

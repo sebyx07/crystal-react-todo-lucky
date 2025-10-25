@@ -1,0 +1,67 @@
+{
+  // Crystal Language Server Configuration
+  // Uses Crystal compiler from Docker container
+
+  // Main file for Crystal tools (auto-detection)
+  "crystal-lang.main": "${workspaceFolder}/src/start_server.cr",
+
+  // Use Docker container for Crystal compiler
+  "crystal-lang.compiler": "docker",
+  "crystal-lang.server": "docker compose run --rm lucky crystalline",
+
+  // Enable language features
+  "crystal-lang.hover": true,
+  "crystal-lang.definitions": true,
+  "crystal-lang.completion": true,
+
+  // Use dependencies tool for better resolution
+  "crystal-lang.dependencies": true,
+
+  // Disable GC for better performance
+  "crystal-lang.disable-gc": true,
+
+  // Compiler flags for Lucky framework
+  "crystal-lang.flags": [
+    "-Dpreview_mt"
+  ],
+
+  // Editor settings for Crystal
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // File associations
+  "files.associations": {
+    "*.cr": "crystal",
+    "*.ecr": "html"
+  },
+
+  // Auto-format Crystal files on save
+  "[crystal]": {
+    "editor.defaultFormatter": "crystal-lang-tools.crystal-lang",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+
+  // Terminal configuration for Docker
+  "terminal.integrated.env.linux": {
+    "DATABASE_URL": "postgres://lucky:password@postgres:5432/crystal_todo_list_development"
+  },
+
+  // Search exclusions
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/lib": true,
+    "**/.cache": true,
+    "**/tmp": true
+  },
+
+  // File watcher exclusions
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/lib/**": true,
+    "**/.cache/**": true,
+    "**/tmp/**": true
+  }
+}

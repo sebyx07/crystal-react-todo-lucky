@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Lucky Server (Docker)",
+      "type": "crystal-lang",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/start_server.cr",
+      "preLaunchTask": "Docker Compose Up",
+      "env": {
+        "DATABASE_URL": "postgres://lucky:password@postgres:5432/crystal_todo_list_development",
+        "LUCKY_ENV": "development"
+      }
+    },
+    {
+      "name": "Run Current Spec",
+      "type": "crystal-lang",
+      "request": "launch",
+      "program": "${file}",
+      "env": {
+        "DATABASE_URL": "postgres://lucky:password@postgres:5432/crystal_todo_list_test",
+        "LUCKY_ENV": "test"
+      }
+    },
+    {
+      "name": "Attach to Lucky Container",
+      "type": "docker",
+      "request": "attach",
+      "containerName": "crystal_todo_list-lucky-1"
+    }
+  ]
+}

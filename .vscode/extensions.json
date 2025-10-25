@@ -1,0 +1,25 @@
+{
+  "recommendations": [
+    // Crystal language support
+    "crystal-lang-tools.crystal-lang",
+
+    // Docker support
+    "ms-azuretools.vscode-docker",
+
+    // Database tools
+    "ckolkman.vscode-postgres",
+
+    // Editor enhancements
+    "editorconfig.editorconfig",
+    "gruntfuggly.todo-tree",
+
+    // Git enhancements
+    "eamodio.gitlens",
+
+    // YAML/JSON support
+    "redhat.vscode-yaml",
+
+    // Markdown support
+    "yzhang.markdown-all-in-one"
+  ]
+}

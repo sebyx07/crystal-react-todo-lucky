@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run Crystal specs in Docker container
+# Usage: bin/spec [file or directory]
+# Examples:
+#   bin/spec                           # Run all specs
+#   bin/spec spec/requests/todos/      # Run specs in directory
+#   bin/spec spec/requests/todos/index_spec.cr  # Run specific file
+
+# Ensure postgres is running
+docker compose up -d postgres
+
+# Wait for postgres to be ready
+echo "Waiting for PostgreSQL to be ready..."
+until docker compose exec -T postgres pg_isready -U lucky > /dev/null 2>&1; do
+  sleep 1
+done
+
+# Create test database if it doesn't exist
+docker compose exec -T postgres psql -U lucky -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'crystal_todo_list_test'" | grep -q 1 || \
+  docker compose exec -T postgres psql -U lucky -d postgres -c "CREATE DATABASE crystal_todo_list_test;"
+
+# Install dependencies if needed
+if [ ! -d "lib" ] || [ ! "$(ls -A lib)" ]; then
+  echo "Installing shards..."
+  docker compose run --rm lucky shards install
+fi
+
+# Run specs
+SPEC_TARGET="${1:-spec}"
+
+docker compose run --rm \
+  -e DATABASE_URL="postgres://lucky:password@postgres:5432/crystal_todo_list_test" \
+  -e LUCKY_ENV=test \
+  lucky \
+  crystal spec "$SPEC_TARGET"

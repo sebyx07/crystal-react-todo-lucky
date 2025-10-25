@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Start development server in Docker
+# This will start postgres and the Lucky development server with hot reloading
+
+echo "Starting development environment..."
+
+# Ensure postgres is running
+docker compose up -d postgres
+
+# Wait for postgres to be ready
+echo "Waiting for PostgreSQL to be ready..."
+until docker compose exec -T postgres pg_isready -U lucky > /dev/null 2>&1; do
+  sleep 1
+done
+
+# Create development database if it doesn't exist
+echo "Setting up development database..."
+docker compose exec -T postgres psql -U lucky -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'crystal_todo_list_development'" | grep -q 1 || \
+  docker compose exec -T postgres psql -U lucky -d postgres -c "CREATE DATABASE crystal_todo_list_development;"
+
+# Run migrations
+echo "Running migrations..."
+docker compose run --rm \
+  -e DATABASE_URL="postgres://lucky:password@postgres:5432/crystal_todo_list_development" \
+  -e LUCKY_ENV=development \
+  lucky \
+  lucky db.migrate
+
+echo ""
+echo "🚀 Starting Lucky development server..."
+echo "   Server will be available at http://localhost:3000"
+echo "   Press Ctrl+C to stop"
+echo ""
+
+# Start the Lucky development server
+docker compose up lucky

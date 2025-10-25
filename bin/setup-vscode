@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Setup VSCode/code-server for Crystal development
+# This script helps configure the Crystal language server
+
+echo "🔧 Setting up VSCode for Crystal development..."
+
+# Check if code-server or VSCode is available
+if command -v code-server &> /dev/null; then
+  CODE_CMD="code-server"
+  echo "✓ Found code-server"
+elif command -v code &> /dev/null; then
+  CODE_CMD="code"
+  echo "✓ Found VSCode"
+else
+  echo "❌ Neither code-server nor VSCode found"
+  echo "   Please install one of them first"
+  exit 1
+fi
+
+# Install recommended extensions
+echo ""
+echo "📦 Installing recommended extensions..."
+
+extensions=(
+  "crystal-lang-tools.crystal-lang"
+  "ms-azuretools.vscode-docker"
+  "ckolkman.vscode-postgres"
+  "editorconfig.editorconfig"
+)
+
+for ext in "${extensions[@]}"; do
+  echo "   Installing $ext..."
+  $CODE_CMD --install-extension "$ext" || echo "   ⚠️  Failed to install $ext (may already be installed)"
+done
+
+echo ""
+echo "✅ VSCode setup complete!"
+echo ""
+echo "Next steps:"
+echo "  1. Reload VSCode/code-server window"
+echo "  2. Crystal language features should work automatically"
+echo "  3. Use Ctrl+Shift+P to access tasks:"
+echo "     - 'Tasks: Run Test Task' to run tests"
+echo "     - 'Tasks: Run Build Task' to start dev server"
+echo ""
+echo "Keyboard shortcuts:"
+echo "  - Ctrl+Shift+B: Start development server"
+echo "  - Ctrl+Shift+T: Run all tests"
+echo "  - F5: Start debugging"
