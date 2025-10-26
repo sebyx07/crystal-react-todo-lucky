@@ -1,145 +1,112 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working with this repository.
+Keywords and critical info for building and debugging this codebase.
 
-## Tech Stack
+## Stack
 
-**Backend:**
-- **Crystal** (>= 1.18.2) + **Lucky Framework** (~> 1.4.0)
-- **Avram** (~> 1.4.0) - ORM
-- **Authentic** (>= 1.0.2) - Auth
-- **PostgreSQL 14**
-
-**Frontend:**
-- **React 19** with **React Router 7** - SPA framework
-- **TypeScript** - Service classes
-- **JavaScript** - Components (JSX)
-- **Bootstrap 5** - UI styling
-- **Bun v1.3.1** - Bundling and package management
+**Backend:** Crystal 1.18+ | Lucky 1.4 | Avram ORM | PostgreSQL 14 | JWT auth
+**Frontend:** React 19 | React Router 7 | TypeScript (services) | JSX (components) | Bootstrap 5
+**Build:** Bun 1.3+ (bundler + package manager)
 
 ## Commands
 
 ```bash
-bin/dev            # Start Lucky server (http://localhost:3000)
-bun run dev        # Watch and rebuild React/CSS assets
-bin/spec           # Run all tests
-bin/lint           # Format Crystal + lint/fix JS/TS
-bin/lint --check   # Check formatting without modifying
-bun run build      # Build assets once
-bun run lint       # Lint JS/TS only
+bin/dev              # Lucky server (localhost:3000)
+bun run dev          # Asset watcher
+bin/spec             # All tests (Crystal + JS)
+bin/spec --crystal   # Crystal only
+bin/spec --js        # Vitest only
+bin/lint             # Format + lint + typecheck
+bin/lint --check     # Check only
 ```
 
-**Docker only** - Use `bin/` scripts or `docker compose run --rm lucky <command>`
+## Critical Patterns
 
-**Development:** Run both `bin/dev` (Lucky server) and `bun run dev` (asset watcher) in separate terminals
+**Lucky:**
+- Actions = routing | Operations = logic | Queries = DB | Models = data | Serializers = JSON
+- Load order: Base → Mixins → Models → Queries → Operations → Actions → Serializers
+- Static files BEFORE route handler in middleware
+- API actions inherit `ApiAction` + `Api::Auth::SkipRequireAuthToken` for public
 
-## Principles
+**React:**
+- Services (`.ts`) = API calls | Components (`.jsx`) = UI
+- JWT in localStorage, auto-added to headers via `ApiService`
+- Catch-all `GET /*` serves SPA (LAST route!)
+- API prefix: `/api/*` to avoid conflicts
 
-- **SOLID** - Single responsibility, Open/closed, Liskov substitution, Interface segregation, Dependency inversion
-- **TDD** - Write tests first, red-green-refactor
-- **Lucky patterns** - Actions (routing), Operations (business logic), Queries (DB), Models (data), Pages (HTML)
+**Operations:**
+- Trim strings BEFORE validation: `title.value = title.value.to_s.strip`
+- Check `operation.valid?` + record exists in update actions
+- `validate_required` doesn't catch empty strings after trim
 
-## Architecture
+**Testing:**
+- Factories: `UserFactory.create`, `TodoFactory.create`
+- API specs: `ApiClient.exec(Action, params)`
+- Frontend: Vitest + React Testing Library
+- Import React in JSX for Vitest compatibility
 
-**Backend (Lucky):**
-- **Actions**: HTTP routing (`ApiAction` for JSON APIs)
-- **Operations**: Business logic (e.g., `SaveTodo`)
-- **Queries**: Database access (chainable, type-safe)
-- **Models**: Data structures only
-- **Serializers**: JSON response formatting
+**Build:**
+- `build.js` = Bun bundler script (replaces Webpack)
+- Generates `mix-manifest.json` with content hashes
+- Watch mode: `bun run dev`
 
-**Frontend (React SPA):**
-- **Pages**: Top-level route components (`Dashboard`, `SignIn`, `SignUp`)
-- **Components**: Reusable UI (`TodoList`, `TodoItem`, `TodoForm`)
-- **Services**: API communication (`ApiService.ts` - TypeScript)
-- **Contexts**: Global state (`AuthContext` - JWT auth)
+## Gotchas
 
-**Authentication:**
-- Backend: JWT tokens via `ApiAction` (requires token header)
-- Frontend: JWT stored in localStorage, auto-added to requests
-- Use `Api::Auth::SkipRequireAuthToken` for public API endpoints
+1. **Update operations**: Lucky returns record even with validation errors
+   ```crystal
+   if updated && operation.valid?  # Both checks!
+   ```
 
-**Routing:**
-- Backend: Catch-all route `GET /*` serves React SPA
-- Frontend: React Router handles client-side routing
-- API endpoints: `/api/*` prefix (e.g., `/api/todos`)
+2. **Empty validation**: `validate_required` may miss whitespace-only strings
+   ```crystal
+   title.value = title.value.to_s.strip  # Trim first!
+   validate_required title
+   ```
 
-**Load order:** Base → Mixins → Models → Queries → Operations → Actions → Serializers
+3. **Middleware order**: Static files BEFORE routes
+   ```crystal
+   Lucky::StaticFileHandler.new("./public", fallthrough: true),
+   Lucky::RouteHandler.new,  # Routes AFTER static
+   ```
 
-## SSL/HTTPS
+4. **Test runner**: Use `bun run test` (Vitest), not `bun test` (Bun's runner)
 
-Optional SSL via `docker-compose.override.yml`:
-1. Copy `docker-compose.override.yml.example` → `docker-compose.override.yml`
-2. Set `SSL_ENABLED=true`, `SSL_CERT_PATH`, `SSL_KEY_PATH`
-3. Port 3000 serves HTTPS (if enabled) or HTTP
+5. **ESLint + Vitest**: Add React import to JSX: `import React from 'react'`
 
-See [docs/ssl-setup.md](docs/ssl-setup.md)
-
-## Testing
-
-- Factories: `TodoFactory.create`, `UserFactory.create`
-- Request specs: `ApiClient.exec(Action, params)`
-- Database auto-cleaned per test
+6. **TypeScript headers**: Use `Record<string, string>` not `HeadersInit` for indexing
 
 ## File Structure
 
 ```
 src/
-├── actions/          # HTTP routing
-├── operations/       # Business logic
-├── queries/          # Database
-├── models/          # Data
-├── pages/           # HTML
-└── components/      # Reusable UI
+├── actions/api/       # API routes (/api/*)
+├── operations/        # SaveTodo, SaveUser
+├── queries/          # TodoQuery.new.user_id(id)
+├── models/           # Todo, User
+├── serializers/      # TodoSerializer.new(todo).render
+├── pages/            # AppLayout (serves React)
+├── js/
+│   ├── services/     # ApiService.ts (TypeScript)
+│   ├── contexts/     # AuthContext.tsx
+│   ├── pages/        # Dashboard.jsx, SignIn.jsx
+│   └── components/   # TodoList.jsx, TodoItem.jsx
+└── css/              # app.scss (Bootstrap imports)
+
+spec/requests/api/    # API endpoint tests
+src/js/**/*.test.*    # Frontend unit tests
 ```
 
-## Key Conventions
+## Security
 
-**Backend:**
-- Routes defined in actions: `post "/api/todos"`, `get "/api/todos/:id"`
-- Operations inherit `Model::SaveOperation` for saves
-- Use `permit_columns` to allow user input
-- Validations in `before_save` blocks
-- **Important**: Check `operation.valid?` in update actions, not just if record exists
-- Always trim string inputs before validation
-- User-scope queries: `TodoQuery.new.user_id(current_user.id)` for security
+- User-scoped queries: `TodoQuery.new.user_id(current_user.id)`
+- JWT required by default (ApiAction)
+- Skip token: `include Api::Auth::SkipRequireAuthToken`
+- `permit_columns` whitelist for operations
 
-**Frontend:**
-- API calls via `apiService` singleton (TypeScript)
-- Protected routes use `<ProtectedRoute>` wrapper
-- Components use `.jsx`, services use `.ts`
-- Bootstrap classes for styling
+## Debug Tips
 
-## Generators
-
-```bash
-docker compose run --rm lucky lucky gen.model Todo title:String
-docker compose run --rm lucky lucky gen.action.browser Todos::Index
-docker compose run --rm lucky lucky gen.migration AddFieldToTable
-```
-
-## Important Learnings
-
-**Lucky/Avram Gotchas:**
-- `validate_required` checks for nil but may not catch empty strings in all cases
-- In update operations, Lucky can return a record even with validation errors
-- Always check `operation.valid?` along with the returned record in API actions:
-  ```crystal
-  if updated_record && operation.valid?  # Both checks needed!
-  ```
-- Trim string attributes before validation to catch whitespace-only inputs
-- Static files must be served BEFORE route handler in middleware order
-
-**React + Lucky Integration:**
-- Single `GET /*` route serves React SPA (must be last route)
-- All API routes use `/api/*` prefix to avoid conflicts
-- JWT token in `Authorization: Bearer <token>` header
-- React components in `src/js/`, styles in `src/css/`
-- Bun native bundler (no Webpack/Laravel Mix needed)
-- Manifest file (`mix-manifest.json`) required for asset versioning
-
-## Resources
-
-- [Lucky Docs](https://luckyframework.org/guides/)
-- [Avram Validations](https://luckyframework.org/guides/database/callbacks-and-validations)
-- [docs/ssl-setup.md](docs/ssl-setup.md) - SSL config
+- **Tests fail**: Check operation.valid? in action
+- **Asset 404**: Rebuild with `bun run build`
+- **Route conflict**: Catch-all `GET /*` must be LAST
+- **Type errors**: Run `bin/lint` (includes tsc)
+- **Empty validation fails**: Trim before validate
