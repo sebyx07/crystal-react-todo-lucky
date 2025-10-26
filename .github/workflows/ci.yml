@@ -10,13 +10,10 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
+    container:
+      image: crystallang/crystal:1.18.2
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Crystal
-        uses: crystal-lang/install-crystal@v1
-        with:
-          crystal: 1.18.2
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
@@ -32,10 +29,11 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
+    container:
+      image: crystallang/crystal:1.18.2
     env:
       LUCKY_ENV: test
-      DB_HOST: localhost
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/crystal_todo_list_test
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/crystal_todo_list_test
 
     services:
       postgres:
@@ -44,8 +42,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: crystal_todo_list_test
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -55,11 +51,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Crystal
-        uses: crystal-lang/install-crystal@v1
-        with:
-          crystal: 1.18.2
-
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -68,9 +59,7 @@ jobs:
       - name: Cache Crystal dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.cache/crystal
-            lib
+          path: lib
           key: ${{ runner.os }}-crystal-${{ hashFiles('**/shard.lock') }}
           restore-keys: |
             ${{ runner.os }}-crystal-

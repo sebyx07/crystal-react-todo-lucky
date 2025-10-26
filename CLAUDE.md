@@ -26,7 +26,8 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 - **Lint job**: Crystal format + ESLint + TypeScript check
 - **Test job**: Frontend (Vitest) + Backend (Crystal spec)
 - Runs on push/PR to any branch
-- Uses Bun 1.3.0 + Crystal 1.18.2
+- Uses `crystallang/crystal:1.18.2` Docker image (faster than installing)
+- Uses Bun 1.3.0
 
 ## Critical Patterns
 
