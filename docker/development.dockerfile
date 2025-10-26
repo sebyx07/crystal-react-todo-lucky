@@ -2,23 +2,22 @@ FROM crystallang/crystal:1.18.2
 
 # Install utilities required to make this Dockerfile run
 RUN apt-get update && \
-    apt-get install -y wget
-# Add the nodesource ppa to apt. Update this to change the nodejs version.
-RUN wget https://deb.nodesource.com/setup_16.x -O- | bash
+    apt-get install -y wget unzip curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Apt installs:
-# - nodejs (from above ppa) is required for front-end apps.
 # - Postgres cli tools are required for lucky-cli.
 # - tmux is required for the Overmind process manager.
 RUN apt-get update && \
-    apt-get install -y nodejs postgresql-client tmux && \
+    apt-get install -y postgresql-client tmux && \
     rm -rf /var/lib/apt/lists/*
 
-# NPM global installs:
-#  - Yarn is the default package manager for the node component of a lucky
-#    browser app.
-#  - Mix is the default asset compiler.
-RUN npm install -g yarn mix
+# Install Bun 1.3.1
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.1"
+ENV PATH="/root/.bun/bin:${PATH}"
+
+# Install Mix globally using Bun
+RUN bun install -g mix
 
 # Install lucky cli
 WORKDIR /lucky/cli

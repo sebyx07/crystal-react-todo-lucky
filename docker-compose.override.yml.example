@@ -1,0 +1,19 @@
+# Docker Compose Override Example
+# Copy this file to docker-compose.override.yml and customize for your local environment
+# The override file is git-ignored and used for local development settings
+
+services:
+  lucky:
+    environment:
+      # Uncomment to enable SSL/TLS in development
+      # SSL_ENABLED: "true"
+      # SSL_CERT_PATH: "/etc/letsencrypt/live/your-domain.com/fullchain.pem"
+      # SSL_KEY_PATH: "/etc/letsencrypt/live/your-domain.com/privkey.pem"
+
+    # Uncomment to mount SSL certificates from Let's Encrypt
+    # volumes:
+    #   - /etc/letsencrypt:/etc/letsencrypt:ro
+
+    # Uncomment to expose additional ports
+    # ports:
+    #   - 5000:5000  # HTTPS port (if SSL is enabled)

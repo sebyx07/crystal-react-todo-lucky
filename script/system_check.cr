@@ -10,8 +10,8 @@ require "./helpers/*"
 #   * Note: Booting additional processes for things like mail, background jobs, etc...
 #     should go in your Procfile.dev.
 
-if command_not_found "yarn"
-  print_error "Yarn is not installed\n  See https://yarnpkg.com/lang/en/docs/install/ for install instructions."
+if command_not_found "bun"
+  print_error "Bun is not installed\n  See https://bun.sh for install instructions."
 end
 
 # CUSTOM PRE-BOOT CHECKS

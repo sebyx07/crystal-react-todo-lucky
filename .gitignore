@@ -15,15 +15,19 @@ start_server
 .env.*.local
 !.env.development.local  # Keep this for new devs
 
+# Docker Compose override (local settings)
+docker-compose.override.yml
+
 # Compiled assets
 /tmp/public/js
 /public/css
 /public/mix-manifest.json
 
-# Node
+# Node / Bun
 /node_modules
 yarn-error.log
 npm-debug.log*
+bun-error.log
 
 # Editor / IDE (keep .vscode for team)
 .idea/
