@@ -14,11 +14,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/js/*"]
     }
   },
-  "include": ["src/js/**/*"],
+  "include": ["src/js/**/*", "vitest.config.ts"],
   "exclude": ["node_modules", "public"]
 }
