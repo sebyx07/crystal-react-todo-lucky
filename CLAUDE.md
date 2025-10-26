@@ -43,6 +43,7 @@ bin/lint --check     # Check only
 - Factories: `UserFactory.create`, `TodoFactory.create`
 - API specs: `ApiClient.exec(Action, params)`
 - Frontend: Vitest + React Testing Library
+- Database cleanup: `AppDatabase.truncate` (not transactions - JWT auth issue)
 - Import React in JSX for Vitest compatibility
 - flow-id attributes: `flow-id="button-name"` (for future integration tests)
 
@@ -76,6 +77,8 @@ bin/lint --check     # Check only
 5. **ESLint + Vitest**: Add React import to JSX: `import React from 'react'`
 
 6. **TypeScript headers**: Use `Record<string, string>` not `HeadersInit` for indexing
+
+7. **Test database**: Can't use transactional specs with JWT auth (users rollback before request completes)
 
 ## File Structure
 
