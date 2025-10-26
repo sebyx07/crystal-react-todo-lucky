@@ -6,7 +6,7 @@ Keywords and critical info for building and debugging this codebase.
 
 **Backend:** Crystal 1.18+ | Lucky 1.4 | Avram ORM | PostgreSQL 14 | JWT auth
 **Frontend:** React 19 | React Router 7 | TypeScript (services) | JSX (components) | Bootstrap 5
-**Build:** Bun 1.3+ (bundler + package manager)
+**Build:** Bun 1.3+ (bundler + package manager) | React Compiler (automatic memoization)
 
 ## Commands
 
@@ -49,6 +49,9 @@ bin/lint --check     # Check only
 
 **Build:**
 - `build.js` = Bun bundler script (replaces Webpack)
+- React Compiler enabled via Babel plugin
+  * Automatic memoization (no useMemo/useCallback needed)
+  * Babel transform via Bun plugin (`babel-plugin.js`)
 - Generates `mix-manifest.json` with content hashes
 - Watch mode: `bun run dev`
 - SCSS deprecation warnings silenced (Bootstrap 5 legacy code)

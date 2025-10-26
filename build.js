@@ -1,7 +1,8 @@
-// Bun build script for React app
+// Bun build script for React app with React Compiler
 import { watch } from 'fs';
 import { createHash } from 'crypto';
 import { readFileSync, writeFileSync } from 'fs';
+import { babelPlugin } from './babel-plugin.js';
 
 const isDev = process.argv.includes('--watch');
 const isProd = process.argv.includes('--production');
@@ -45,7 +46,8 @@ async function buildJS() {
     },
     define: {
       'process.env.NODE_ENV': isProd ? '"production"' : '"development"'
-    }
+    },
+    plugins: [babelPlugin()]
   });
 
   if (!result.success) {

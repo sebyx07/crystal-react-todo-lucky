@@ -25,269 +25,6 @@ var __export = (target, all) => {
     });
 };
 
-// node_modules/scheduler/cjs/scheduler.development.js
-var require_scheduler_development = __commonJS((exports) => {
-  (function() {
-    function performWorkUntilDeadline() {
-      needsPaint = false;
-      if (isMessageLoopRunning) {
-        var currentTime = exports.unstable_now();
-        startTime = currentTime;
-        var hasMoreWork = true;
-        try {
-          a: {
-            isHostCallbackScheduled = false;
-            isHostTimeoutScheduled && (isHostTimeoutScheduled = false, localClearTimeout(taskTimeoutID), taskTimeoutID = -1);
-            isPerformingWork = true;
-            var previousPriorityLevel = currentPriorityLevel;
-            try {
-              b: {
-                advanceTimers(currentTime);
-                for (currentTask = peek(taskQueue);currentTask !== null && !(currentTask.expirationTime > currentTime && shouldYieldToHost()); ) {
-                  var callback = currentTask.callback;
-                  if (typeof callback === "function") {
-                    currentTask.callback = null;
-                    currentPriorityLevel = currentTask.priorityLevel;
-                    var continuationCallback = callback(currentTask.expirationTime <= currentTime);
-                    currentTime = exports.unstable_now();
-                    if (typeof continuationCallback === "function") {
-                      currentTask.callback = continuationCallback;
-                      advanceTimers(currentTime);
-                      hasMoreWork = true;
-                      break b;
-                    }
-                    currentTask === peek(taskQueue) && pop(taskQueue);
-                    advanceTimers(currentTime);
-                  } else
-                    pop(taskQueue);
-                  currentTask = peek(taskQueue);
-                }
-                if (currentTask !== null)
-                  hasMoreWork = true;
-                else {
-                  var firstTimer = peek(timerQueue);
-                  firstTimer !== null && requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-                  hasMoreWork = false;
-                }
-              }
-              break a;
-            } finally {
-              currentTask = null, currentPriorityLevel = previousPriorityLevel, isPerformingWork = false;
-            }
-            hasMoreWork = undefined;
-          }
-        } finally {
-          hasMoreWork ? schedulePerformWorkUntilDeadline() : isMessageLoopRunning = false;
-        }
-      }
-    }
-    function push(heap, node) {
-      var index = heap.length;
-      heap.push(node);
-      a:
-        for (;0 < index; ) {
-          var parentIndex = index - 1 >>> 1, parent = heap[parentIndex];
-          if (0 < compare(parent, node))
-            heap[parentIndex] = node, heap[index] = parent, index = parentIndex;
-          else
-            break a;
-        }
-    }
-    function peek(heap) {
-      return heap.length === 0 ? null : heap[0];
-    }
-    function pop(heap) {
-      if (heap.length === 0)
-        return null;
-      var first = heap[0], last = heap.pop();
-      if (last !== first) {
-        heap[0] = last;
-        a:
-          for (var index = 0, length = heap.length, halfLength = length >>> 1;index < halfLength; ) {
-            var leftIndex = 2 * (index + 1) - 1, left = heap[leftIndex], rightIndex = leftIndex + 1, right = heap[rightIndex];
-            if (0 > compare(left, last))
-              rightIndex < length && 0 > compare(right, left) ? (heap[index] = right, heap[rightIndex] = last, index = rightIndex) : (heap[index] = left, heap[leftIndex] = last, index = leftIndex);
-            else if (rightIndex < length && 0 > compare(right, last))
-              heap[index] = right, heap[rightIndex] = last, index = rightIndex;
-            else
-              break a;
-          }
-      }
-      return first;
-    }
-    function compare(a, b) {
-      var diff = a.sortIndex - b.sortIndex;
-      return diff !== 0 ? diff : a.id - b.id;
-    }
-    function advanceTimers(currentTime) {
-      for (var timer = peek(timerQueue);timer !== null; ) {
-        if (timer.callback === null)
-          pop(timerQueue);
-        else if (timer.startTime <= currentTime)
-          pop(timerQueue), timer.sortIndex = timer.expirationTime, push(taskQueue, timer);
-        else
-          break;
-        timer = peek(timerQueue);
-      }
-    }
-    function handleTimeout(currentTime) {
-      isHostTimeoutScheduled = false;
-      advanceTimers(currentTime);
-      if (!isHostCallbackScheduled)
-        if (peek(taskQueue) !== null)
-          isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline());
-        else {
-          var firstTimer = peek(timerQueue);
-          firstTimer !== null && requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-        }
-    }
-    function shouldYieldToHost() {
-      return needsPaint ? true : exports.unstable_now() - startTime < frameInterval ? false : true;
-    }
-    function requestHostTimeout(callback, ms) {
-      taskTimeoutID = localSetTimeout(function() {
-        callback(exports.unstable_now());
-      }, ms);
-    }
-    typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function" && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-    exports.unstable_now = undefined;
-    if (typeof performance === "object" && typeof performance.now === "function") {
-      var localPerformance = performance;
-      exports.unstable_now = function() {
-        return localPerformance.now();
-      };
-    } else {
-      var localDate = Date, initialTime = localDate.now();
-      exports.unstable_now = function() {
-        return localDate.now() - initialTime;
-      };
-    }
-    var taskQueue = [], timerQueue = [], taskIdCounter = 1, currentTask = null, currentPriorityLevel = 3, isPerformingWork = false, isHostCallbackScheduled = false, isHostTimeoutScheduled = false, needsPaint = false, localSetTimeout = typeof setTimeout === "function" ? setTimeout : null, localClearTimeout = typeof clearTimeout === "function" ? clearTimeout : null, localSetImmediate = typeof setImmediate !== "undefined" ? setImmediate : null, isMessageLoopRunning = false, taskTimeoutID = -1, frameInterval = 5, startTime = -1;
-    if (typeof localSetImmediate === "function")
-      var schedulePerformWorkUntilDeadline = function() {
-        localSetImmediate(performWorkUntilDeadline);
-      };
-    else if (typeof MessageChannel !== "undefined") {
-      var channel = new MessageChannel, port = channel.port2;
-      channel.port1.onmessage = performWorkUntilDeadline;
-      schedulePerformWorkUntilDeadline = function() {
-        port.postMessage(null);
-      };
-    } else
-      schedulePerformWorkUntilDeadline = function() {
-        localSetTimeout(performWorkUntilDeadline, 0);
-      };
-    exports.unstable_IdlePriority = 5;
-    exports.unstable_ImmediatePriority = 1;
-    exports.unstable_LowPriority = 4;
-    exports.unstable_NormalPriority = 3;
-    exports.unstable_Profiling = null;
-    exports.unstable_UserBlockingPriority = 2;
-    exports.unstable_cancelCallback = function(task) {
-      task.callback = null;
-    };
-    exports.unstable_forceFrameRate = function(fps) {
-      0 > fps || 125 < fps ? console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported") : frameInterval = 0 < fps ? Math.floor(1000 / fps) : 5;
-    };
-    exports.unstable_getCurrentPriorityLevel = function() {
-      return currentPriorityLevel;
-    };
-    exports.unstable_next = function(eventHandler) {
-      switch (currentPriorityLevel) {
-        case 1:
-        case 2:
-        case 3:
-          var priorityLevel = 3;
-          break;
-        default:
-          priorityLevel = currentPriorityLevel;
-      }
-      var previousPriorityLevel = currentPriorityLevel;
-      currentPriorityLevel = priorityLevel;
-      try {
-        return eventHandler();
-      } finally {
-        currentPriorityLevel = previousPriorityLevel;
-      }
-    };
-    exports.unstable_requestPaint = function() {
-      needsPaint = true;
-    };
-    exports.unstable_runWithPriority = function(priorityLevel, eventHandler) {
-      switch (priorityLevel) {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-          break;
-        default:
-          priorityLevel = 3;
-      }
-      var previousPriorityLevel = currentPriorityLevel;
-      currentPriorityLevel = priorityLevel;
-      try {
-        return eventHandler();
-      } finally {
-        currentPriorityLevel = previousPriorityLevel;
-      }
-    };
-    exports.unstable_scheduleCallback = function(priorityLevel, callback, options) {
-      var currentTime = exports.unstable_now();
-      typeof options === "object" && options !== null ? (options = options.delay, options = typeof options === "number" && 0 < options ? currentTime + options : currentTime) : options = currentTime;
-      switch (priorityLevel) {
-        case 1:
-          var timeout = -1;
-          break;
-        case 2:
-          timeout = 250;
-          break;
-        case 5:
-          timeout = 1073741823;
-          break;
-        case 4:
-          timeout = 1e4;
-          break;
-        default:
-          timeout = 5000;
-      }
-      timeout = options + timeout;
-      priorityLevel = {
-        id: taskIdCounter++,
-        callback,
-        priorityLevel,
-        startTime: options,
-        expirationTime: timeout,
-        sortIndex: -1
-      };
-      options > currentTime ? (priorityLevel.sortIndex = options, push(timerQueue, priorityLevel), peek(taskQueue) === null && priorityLevel === peek(timerQueue) && (isHostTimeoutScheduled ? (localClearTimeout(taskTimeoutID), taskTimeoutID = -1) : isHostTimeoutScheduled = true, requestHostTimeout(handleTimeout, options - currentTime))) : (priorityLevel.sortIndex = timeout, push(taskQueue, priorityLevel), isHostCallbackScheduled || isPerformingWork || (isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline())));
-      return priorityLevel;
-    };
-    exports.unstable_shouldYield = shouldYieldToHost;
-    exports.unstable_wrapCallback = function(callback) {
-      var parentPriorityLevel = currentPriorityLevel;
-      return function() {
-        var previousPriorityLevel = currentPriorityLevel;
-        currentPriorityLevel = parentPriorityLevel;
-        try {
-          return callback.apply(this, arguments);
-        } finally {
-          currentPriorityLevel = previousPriorityLevel;
-        }
-      };
-    };
-    typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop === "function" && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
-  })();
-});
-
-// node_modules/scheduler/index.js
-var require_scheduler = __commonJS((exports, module) => {
-  var scheduler_development = __toESM(require_scheduler_development(), 1);
-  if (false) {} else {
-    module.exports = scheduler_development;
-  }
-});
-
 // node_modules/react/cjs/react.development.js
 var require_react_development = __commonJS((exports, module) => {
   (function() {
@@ -1116,6 +853,294 @@ var require_react = __commonJS((exports, module) => {
   var react_development = __toESM(require_react_development(), 1);
   if (false) {} else {
     module.exports = react_development;
+  }
+});
+
+// node_modules/react/cjs/react-compiler-runtime.development.js
+var require_react_compiler_runtime_development = __commonJS((exports) => {
+  var react = __toESM(require_react(), 1);
+  (function() {
+    var ReactSharedInternals = react.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+    exports.c = function(size) {
+      var dispatcher = ReactSharedInternals.H;
+      dispatcher === null && console.error(`Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.`);
+      return dispatcher.useMemoCache(size);
+    };
+  })();
+});
+
+// node_modules/react/compiler-runtime.js
+var require_compiler_runtime = __commonJS((exports, module) => {
+  var react_compiler_runtime_development = __toESM(require_react_compiler_runtime_development(), 1);
+  if (false) {} else {
+    module.exports = react_compiler_runtime_development;
+  }
+});
+
+// node_modules/scheduler/cjs/scheduler.development.js
+var require_scheduler_development = __commonJS((exports) => {
+  (function() {
+    function performWorkUntilDeadline() {
+      needsPaint = false;
+      if (isMessageLoopRunning) {
+        var currentTime = exports.unstable_now();
+        startTime = currentTime;
+        var hasMoreWork = true;
+        try {
+          a: {
+            isHostCallbackScheduled = false;
+            isHostTimeoutScheduled && (isHostTimeoutScheduled = false, localClearTimeout(taskTimeoutID), taskTimeoutID = -1);
+            isPerformingWork = true;
+            var previousPriorityLevel = currentPriorityLevel;
+            try {
+              b: {
+                advanceTimers(currentTime);
+                for (currentTask = peek(taskQueue);currentTask !== null && !(currentTask.expirationTime > currentTime && shouldYieldToHost()); ) {
+                  var callback = currentTask.callback;
+                  if (typeof callback === "function") {
+                    currentTask.callback = null;
+                    currentPriorityLevel = currentTask.priorityLevel;
+                    var continuationCallback = callback(currentTask.expirationTime <= currentTime);
+                    currentTime = exports.unstable_now();
+                    if (typeof continuationCallback === "function") {
+                      currentTask.callback = continuationCallback;
+                      advanceTimers(currentTime);
+                      hasMoreWork = true;
+                      break b;
+                    }
+                    currentTask === peek(taskQueue) && pop(taskQueue);
+                    advanceTimers(currentTime);
+                  } else
+                    pop(taskQueue);
+                  currentTask = peek(taskQueue);
+                }
+                if (currentTask !== null)
+                  hasMoreWork = true;
+                else {
+                  var firstTimer = peek(timerQueue);
+                  firstTimer !== null && requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+                  hasMoreWork = false;
+                }
+              }
+              break a;
+            } finally {
+              currentTask = null, currentPriorityLevel = previousPriorityLevel, isPerformingWork = false;
+            }
+            hasMoreWork = undefined;
+          }
+        } finally {
+          hasMoreWork ? schedulePerformWorkUntilDeadline() : isMessageLoopRunning = false;
+        }
+      }
+    }
+    function push(heap, node) {
+      var index = heap.length;
+      heap.push(node);
+      a:
+        for (;0 < index; ) {
+          var parentIndex = index - 1 >>> 1, parent = heap[parentIndex];
+          if (0 < compare(parent, node))
+            heap[parentIndex] = node, heap[index] = parent, index = parentIndex;
+          else
+            break a;
+        }
+    }
+    function peek(heap) {
+      return heap.length === 0 ? null : heap[0];
+    }
+    function pop(heap) {
+      if (heap.length === 0)
+        return null;
+      var first = heap[0], last = heap.pop();
+      if (last !== first) {
+        heap[0] = last;
+        a:
+          for (var index = 0, length = heap.length, halfLength = length >>> 1;index < halfLength; ) {
+            var leftIndex = 2 * (index + 1) - 1, left = heap[leftIndex], rightIndex = leftIndex + 1, right = heap[rightIndex];
+            if (0 > compare(left, last))
+              rightIndex < length && 0 > compare(right, left) ? (heap[index] = right, heap[rightIndex] = last, index = rightIndex) : (heap[index] = left, heap[leftIndex] = last, index = leftIndex);
+            else if (rightIndex < length && 0 > compare(right, last))
+              heap[index] = right, heap[rightIndex] = last, index = rightIndex;
+            else
+              break a;
+          }
+      }
+      return first;
+    }
+    function compare(a, b) {
+      var diff = a.sortIndex - b.sortIndex;
+      return diff !== 0 ? diff : a.id - b.id;
+    }
+    function advanceTimers(currentTime) {
+      for (var timer = peek(timerQueue);timer !== null; ) {
+        if (timer.callback === null)
+          pop(timerQueue);
+        else if (timer.startTime <= currentTime)
+          pop(timerQueue), timer.sortIndex = timer.expirationTime, push(taskQueue, timer);
+        else
+          break;
+        timer = peek(timerQueue);
+      }
+    }
+    function handleTimeout(currentTime) {
+      isHostTimeoutScheduled = false;
+      advanceTimers(currentTime);
+      if (!isHostCallbackScheduled)
+        if (peek(taskQueue) !== null)
+          isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline());
+        else {
+          var firstTimer = peek(timerQueue);
+          firstTimer !== null && requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+        }
+    }
+    function shouldYieldToHost() {
+      return needsPaint ? true : exports.unstable_now() - startTime < frameInterval ? false : true;
+    }
+    function requestHostTimeout(callback, ms) {
+      taskTimeoutID = localSetTimeout(function() {
+        callback(exports.unstable_now());
+      }, ms);
+    }
+    typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function" && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
+    exports.unstable_now = undefined;
+    if (typeof performance === "object" && typeof performance.now === "function") {
+      var localPerformance = performance;
+      exports.unstable_now = function() {
+        return localPerformance.now();
+      };
+    } else {
+      var localDate = Date, initialTime = localDate.now();
+      exports.unstable_now = function() {
+        return localDate.now() - initialTime;
+      };
+    }
+    var taskQueue = [], timerQueue = [], taskIdCounter = 1, currentTask = null, currentPriorityLevel = 3, isPerformingWork = false, isHostCallbackScheduled = false, isHostTimeoutScheduled = false, needsPaint = false, localSetTimeout = typeof setTimeout === "function" ? setTimeout : null, localClearTimeout = typeof clearTimeout === "function" ? clearTimeout : null, localSetImmediate = typeof setImmediate !== "undefined" ? setImmediate : null, isMessageLoopRunning = false, taskTimeoutID = -1, frameInterval = 5, startTime = -1;
+    if (typeof localSetImmediate === "function")
+      var schedulePerformWorkUntilDeadline = function() {
+        localSetImmediate(performWorkUntilDeadline);
+      };
+    else if (typeof MessageChannel !== "undefined") {
+      var channel = new MessageChannel, port = channel.port2;
+      channel.port1.onmessage = performWorkUntilDeadline;
+      schedulePerformWorkUntilDeadline = function() {
+        port.postMessage(null);
+      };
+    } else
+      schedulePerformWorkUntilDeadline = function() {
+        localSetTimeout(performWorkUntilDeadline, 0);
+      };
+    exports.unstable_IdlePriority = 5;
+    exports.unstable_ImmediatePriority = 1;
+    exports.unstable_LowPriority = 4;
+    exports.unstable_NormalPriority = 3;
+    exports.unstable_Profiling = null;
+    exports.unstable_UserBlockingPriority = 2;
+    exports.unstable_cancelCallback = function(task) {
+      task.callback = null;
+    };
+    exports.unstable_forceFrameRate = function(fps) {
+      0 > fps || 125 < fps ? console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported") : frameInterval = 0 < fps ? Math.floor(1000 / fps) : 5;
+    };
+    exports.unstable_getCurrentPriorityLevel = function() {
+      return currentPriorityLevel;
+    };
+    exports.unstable_next = function(eventHandler) {
+      switch (currentPriorityLevel) {
+        case 1:
+        case 2:
+        case 3:
+          var priorityLevel = 3;
+          break;
+        default:
+          priorityLevel = currentPriorityLevel;
+      }
+      var previousPriorityLevel = currentPriorityLevel;
+      currentPriorityLevel = priorityLevel;
+      try {
+        return eventHandler();
+      } finally {
+        currentPriorityLevel = previousPriorityLevel;
+      }
+    };
+    exports.unstable_requestPaint = function() {
+      needsPaint = true;
+    };
+    exports.unstable_runWithPriority = function(priorityLevel, eventHandler) {
+      switch (priorityLevel) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          break;
+        default:
+          priorityLevel = 3;
+      }
+      var previousPriorityLevel = currentPriorityLevel;
+      currentPriorityLevel = priorityLevel;
+      try {
+        return eventHandler();
+      } finally {
+        currentPriorityLevel = previousPriorityLevel;
+      }
+    };
+    exports.unstable_scheduleCallback = function(priorityLevel, callback, options) {
+      var currentTime = exports.unstable_now();
+      typeof options === "object" && options !== null ? (options = options.delay, options = typeof options === "number" && 0 < options ? currentTime + options : currentTime) : options = currentTime;
+      switch (priorityLevel) {
+        case 1:
+          var timeout = -1;
+          break;
+        case 2:
+          timeout = 250;
+          break;
+        case 5:
+          timeout = 1073741823;
+          break;
+        case 4:
+          timeout = 1e4;
+          break;
+        default:
+          timeout = 5000;
+      }
+      timeout = options + timeout;
+      priorityLevel = {
+        id: taskIdCounter++,
+        callback,
+        priorityLevel,
+        startTime: options,
+        expirationTime: timeout,
+        sortIndex: -1
+      };
+      options > currentTime ? (priorityLevel.sortIndex = options, push(timerQueue, priorityLevel), peek(taskQueue) === null && priorityLevel === peek(timerQueue) && (isHostTimeoutScheduled ? (localClearTimeout(taskTimeoutID), taskTimeoutID = -1) : isHostTimeoutScheduled = true, requestHostTimeout(handleTimeout, options - currentTime))) : (priorityLevel.sortIndex = timeout, push(taskQueue, priorityLevel), isHostCallbackScheduled || isPerformingWork || (isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline())));
+      return priorityLevel;
+    };
+    exports.unstable_shouldYield = shouldYieldToHost;
+    exports.unstable_wrapCallback = function(callback) {
+      var parentPriorityLevel = currentPriorityLevel;
+      return function() {
+        var previousPriorityLevel = currentPriorityLevel;
+        currentPriorityLevel = parentPriorityLevel;
+        try {
+          return callback.apply(this, arguments);
+        } finally {
+          currentPriorityLevel = previousPriorityLevel;
+        }
+      };
+    };
+    typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop === "function" && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
+  })();
+});
+
+// node_modules/scheduler/index.js
+var require_scheduler = __commonJS((exports, module) => {
+  var scheduler_development = __toESM(require_scheduler_development(), 1);
+  if (false) {} else {
+    module.exports = scheduler_development;
   }
 });
 
@@ -16886,8 +16911,8 @@ var require_client = __commonJS((exports, module) => {
   }
 });
 
-// node_modules/react/cjs/react-jsx-dev-runtime.development.js
-var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
+// node_modules/react/cjs/react-jsx-runtime.development.js
+var require_react_jsx_runtime_development = __commonJS((exports) => {
   var React12 = __toESM(require_react(), 1);
   (function() {
     function getComponentNameFromType(type) {
@@ -17094,22 +17119,27 @@ React keys must be passed directly to JSX without using spread:
     var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
     var didWarnAboutKeySpread = {};
     exports.Fragment = REACT_FRAGMENT_TYPE;
-    exports.jsxDEV = function(type, config, maybeKey, isStaticChildren) {
+    exports.jsx = function(type, config, maybeKey) {
       var trackActualOwner = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
-      return jsxDEVImpl(type, config, maybeKey, isStaticChildren, trackActualOwner ? Error("react-stack-top-frame") : unknownOwnerDebugStack, trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask);
+      return jsxDEVImpl(type, config, maybeKey, false, trackActualOwner ? Error("react-stack-top-frame") : unknownOwnerDebugStack, trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask);
+    };
+    exports.jsxs = function(type, config, maybeKey) {
+      var trackActualOwner = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+      return jsxDEVImpl(type, config, maybeKey, true, trackActualOwner ? Error("react-stack-top-frame") : unknownOwnerDebugStack, trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask);
     };
   })();
 });
 
-// node_modules/react/jsx-dev-runtime.js
-var require_jsx_dev_runtime = __commonJS((exports, module) => {
-  var react_jsx_dev_runtime_development = __toESM(require_react_jsx_dev_runtime_development(), 1);
+// node_modules/react/jsx-runtime.js
+var require_jsx_runtime = __commonJS((exports, module) => {
+  var react_jsx_runtime_development = __toESM(require_react_jsx_runtime_development(), 1);
   if (false) {} else {
-    module.exports = react_jsx_dev_runtime_development;
+    module.exports = react_jsx_runtime_development;
   }
 });
 
 // src/js/app.tsx
+var import_compiler_runtime3 = __toESM(require_compiler_runtime(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-OIYGIGL5.mjs
@@ -19030,6 +19060,7 @@ function useViewTransitionState(to, { relative } = {}) {
 "use client";
 
 // src/js/contexts/AuthContext.tsx
+var import_compiler_runtime = __toESM(require_compiler_runtime(), 1);
 var import_react = __toESM(require_react(), 1);
 
 // src/js/services/ApiService.ts
@@ -19137,50 +19168,106 @@ class ApiService {
 var apiService = new ApiService;
 
 // src/js/contexts/AuthContext.tsx
-var jsx_dev_runtime = __toESM(require_jsx_dev_runtime(), 1);
-var AuthContext = import_react.createContext(undefined);
-function AuthProvider({ children }) {
+var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
+var AuthContext = /* @__PURE__ */ import_react.createContext(undefined);
+function AuthProvider(t0) {
+  const $ = import_compiler_runtime.c(12);
+  const {
+    children
+  } = t0;
   const [user, setUser] = import_react.useState(null);
   const [loading, setLoading] = import_react.useState(true);
-  import_react.useEffect(() => {
-    const initAuth = async () => {
-      if (apiService.isAuthenticated()) {
-        try {
-          const userData = await apiService.getCurrentUser();
-          setUser(userData);
-        } catch (_error) {
-          apiService.clearToken();
+  let t1;
+  let t2;
+  if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+    t1 = () => {
+      const initAuth = async () => {
+        if (apiService.isAuthenticated()) {
+          try {
+            const userData = await apiService.getCurrentUser();
+            setUser(userData);
+          } catch (t32) {
+            apiService.clearToken();
+          }
         }
-      }
-      setLoading(false);
+        setLoading(false);
+      };
+      initAuth();
     };
-    initAuth();
-  }, []);
-  const signIn = async (email, password) => {
-    await apiService.signIn(email, password);
-    const userData = await apiService.getCurrentUser();
-    setUser(userData);
-  };
-  const signUp = async (email, password, passwordConfirmation) => {
-    await apiService.signUp(email, password, passwordConfirmation);
-    const userData = await apiService.getCurrentUser();
-    setUser(userData);
-  };
-  const signOut = async () => {
-    await apiService.signOut();
-    setUser(null);
-  };
-  return /* @__PURE__ */ jsx_dev_runtime.jsxDEV(AuthContext.Provider, {
-    value: {
+    t2 = [];
+    $[0] = t1;
+    $[1] = t2;
+  } else {
+    t1 = $[0];
+    t2 = $[1];
+  }
+  import_react.useEffect(t1, t2);
+  let t3;
+  if ($[2] === Symbol.for("react.memo_cache_sentinel")) {
+    t3 = async (email, password) => {
+      await apiService.signIn(email, password);
+      const userData_0 = await apiService.getCurrentUser();
+      setUser(userData_0);
+    };
+    $[2] = t3;
+  } else {
+    t3 = $[2];
+  }
+  const signIn = t3;
+  let t4;
+  if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
+    t4 = async (email_0, password_0, passwordConfirmation) => {
+      await apiService.signUp(email_0, password_0, passwordConfirmation);
+      const userData_1 = await apiService.getCurrentUser();
+      setUser(userData_1);
+    };
+    $[3] = t4;
+  } else {
+    t4 = $[3];
+  }
+  const signUp = t4;
+  let t5;
+  if ($[4] === Symbol.for("react.memo_cache_sentinel")) {
+    t5 = async () => {
+      await apiService.signOut();
+      setUser(null);
+    };
+    $[4] = t5;
+  } else {
+    t5 = $[4];
+  }
+  const signOut = t5;
+  const t6 = !!user;
+  let t7;
+  if ($[5] !== loading || $[6] !== t6 || $[7] !== user) {
+    t7 = {
       user,
-      isAuthenticated: !!user,
+      isAuthenticated: t6,
       loading,
       signIn,
       signUp,
       signOut
-    },
-    children
-  }, undefined, false, undefined, this);
+    };
+    $[5] = loading;
+    $[6] = t6;
+    $[7] = user;
+    $[8] = t7;
+  } else {
+    t7 = $[8];
+  }
+  let t8;
+  if ($[9] !== children || $[10] !== t7) {
+    t8 = /* @__PURE__ */ import_jsx_runtime.jsx(AuthContext.Provider, {
+      value: t7,
+      children
+    });
+    $[9] = children;
+    $[10] = t7;
+    $[11] = t8;
+  } else {
+    t8 = $[11];
+  }
+  return t8;
 }
 function useAuth() {
   const context = import_react.useContext(AuthContext);
@@ -19192,13 +19279,15 @@ function useAuth() {
 
 // src/js/pages/SignIn.jsx
 var import_react2 = __toESM(require_react(), 1);
-var jsx_dev_runtime2 = __toESM(require_jsx_dev_runtime(), 1);
+var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
 function SignIn() {
   const [email, setEmail] = import_react2.useState("");
   const [password, setPassword] = import_react2.useState("");
   const [error, setError] = import_react2.useState("");
   const [loading, setLoading] = import_react2.useState(false);
-  const { signIn } = useAuth();
+  const {
+    signIn
+  } = useAuth();
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19213,100 +19302,87 @@ function SignIn() {
       setLoading(false);
     }
   };
-  return /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("div", {
+  return /* @__PURE__ */ import_jsx_runtime2.jsx("div", {
     className: "auth-container d-flex justify-content-center align-items-center",
-    children: /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("div", {
+    children: /* @__PURE__ */ import_jsx_runtime2.jsx("div", {
       className: "card shadow",
-      style: { maxWidth: "400px", width: "100%" },
-      children: /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("div", {
+      style: {
+        maxWidth: "400px",
+        width: "100%"
+      },
+      children: /* @__PURE__ */ import_jsx_runtime2.jsxs("div", {
         className: "card-body p-4",
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("h1", {
-            className: "card-title text-center mb-4",
-            children: "Sign In"
-          }, undefined, false, undefined, this),
-          error && /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("div", {
-            className: "alert alert-danger",
-            children: error
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("form", {
-            onSubmit: handleSubmit,
-            children: [
-              /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("div", {
-                className: "mb-3",
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("label", {
-                    htmlFor: "email",
-                    className: "form-label",
-                    children: "Email"
-                  }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("input", {
-                    id: "email",
-                    name: "sign_in:email",
-                    type: "email",
-                    className: "form-control",
-                    value: email,
-                    onChange: (e) => setEmail(e.target.value),
-                    required: true,
-                    autoFocus: true
-                  }, undefined, false, undefined, this)
-                ]
-              }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("div", {
-                className: "mb-3",
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("label", {
-                    htmlFor: "password",
-                    className: "form-label",
-                    children: "Password"
-                  }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("input", {
-                    id: "password",
-                    name: "sign_in:password",
-                    type: "password",
-                    className: "form-control",
-                    value: password,
-                    onChange: (e) => setPassword(e.target.value),
-                    required: true
-                  }, undefined, false, undefined, this)
-                ]
-              }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("button", {
-                type: "submit",
-                disabled: loading,
-                className: "btn btn-primary w-100",
-                "flow-id": "sign-in-button",
-                children: loading ? "Signing in..." : "Sign In"
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("p", {
-            className: "text-center mt-3 mb-0",
-            children: [
-              "Don't have an account? ",
-              /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Link, {
-                to: "/sign-up",
-                "flow-id": "sign-up-link",
-                children: "Sign Up"
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this)
-        ]
-      }, undefined, true, undefined, this)
-    }, undefined, false, undefined, this)
-  }, undefined, false, undefined, this);
+        children: [/* @__PURE__ */ import_jsx_runtime2.jsx("h1", {
+          className: "card-title text-center mb-4",
+          children: "Sign In"
+        }), error && /* @__PURE__ */ import_jsx_runtime2.jsx("div", {
+          className: "alert alert-danger",
+          children: error
+        }), /* @__PURE__ */ import_jsx_runtime2.jsxs("form", {
+          onSubmit: handleSubmit,
+          children: [/* @__PURE__ */ import_jsx_runtime2.jsxs("div", {
+            className: "mb-3",
+            children: [/* @__PURE__ */ import_jsx_runtime2.jsx("label", {
+              htmlFor: "email",
+              className: "form-label",
+              children: "Email"
+            }), /* @__PURE__ */ import_jsx_runtime2.jsx("input", {
+              id: "email",
+              name: "sign_in:email",
+              type: "email",
+              className: "form-control",
+              value: email,
+              onChange: (e_0) => setEmail(e_0.target.value),
+              required: true,
+              autoFocus: true
+            })]
+          }), /* @__PURE__ */ import_jsx_runtime2.jsxs("div", {
+            className: "mb-3",
+            children: [/* @__PURE__ */ import_jsx_runtime2.jsx("label", {
+              htmlFor: "password",
+              className: "form-label",
+              children: "Password"
+            }), /* @__PURE__ */ import_jsx_runtime2.jsx("input", {
+              id: "password",
+              name: "sign_in:password",
+              type: "password",
+              className: "form-control",
+              value: password,
+              onChange: (e_1) => setPassword(e_1.target.value),
+              required: true
+            })]
+          }), /* @__PURE__ */ import_jsx_runtime2.jsx("button", {
+            type: "submit",
+            disabled: loading,
+            className: "btn btn-primary w-100",
+            "flow-id": "sign-in-button",
+            children: loading ? "Signing in..." : "Sign In"
+          })]
+        }), /* @__PURE__ */ import_jsx_runtime2.jsxs("p", {
+          className: "text-center mt-3 mb-0",
+          children: ["Don't have an account? ", /* @__PURE__ */ import_jsx_runtime2.jsx(Link, {
+            to: "/sign-up",
+            "flow-id": "sign-up-link",
+            children: "Sign Up"
+          })]
+        })]
+      })
+    })
+  });
 }
 
 // src/js/pages/SignUp.jsx
 var import_react3 = __toESM(require_react(), 1);
-var jsx_dev_runtime3 = __toESM(require_jsx_dev_runtime(), 1);
+var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
 function SignUp() {
   const [email, setEmail] = import_react3.useState("");
   const [password, setPassword] = import_react3.useState("");
   const [passwordConfirmation, setPasswordConfirmation] = import_react3.useState("");
   const [error, setError] = import_react3.useState("");
   const [loading, setLoading] = import_react3.useState(false);
-  const { signUp } = useAuth();
+  const {
+    signUp
+  } = useAuth();
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19325,115 +19401,104 @@ function SignUp() {
       setLoading(false);
     }
   };
-  return /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
+  return /* @__PURE__ */ import_jsx_runtime3.jsx("div", {
     className: "auth-container d-flex justify-content-center align-items-center",
-    children: /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
+    children: /* @__PURE__ */ import_jsx_runtime3.jsx("div", {
       className: "card shadow",
-      style: { maxWidth: "400px", width: "100%" },
-      children: /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
+      style: {
+        maxWidth: "400px",
+        width: "100%"
+      },
+      children: /* @__PURE__ */ import_jsx_runtime3.jsxs("div", {
         className: "card-body p-4",
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("h1", {
-            className: "card-title text-center mb-4",
-            children: "Sign Up"
-          }, undefined, false, undefined, this),
-          error && /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
-            className: "alert alert-danger",
-            children: error
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("form", {
-            onSubmit: handleSubmit,
-            children: [
-              /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
-                className: "mb-3",
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("label", {
-                    htmlFor: "email",
-                    className: "form-label",
-                    children: "Email"
-                  }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("input", {
-                    id: "email",
-                    name: "sign_up:email",
-                    type: "email",
-                    className: "form-control",
-                    value: email,
-                    onChange: (e) => setEmail(e.target.value),
-                    required: true,
-                    autoFocus: true
-                  }, undefined, false, undefined, this)
-                ]
-              }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
-                className: "mb-3",
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("label", {
-                    htmlFor: "password",
-                    className: "form-label",
-                    children: "Password"
-                  }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("input", {
-                    id: "password",
-                    name: "sign_up:password",
-                    type: "password",
-                    className: "form-control",
-                    value: password,
-                    onChange: (e) => setPassword(e.target.value),
-                    required: true
-                  }, undefined, false, undefined, this)
-                ]
-              }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("div", {
-                className: "mb-3",
-                children: [
-                  /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("label", {
-                    htmlFor: "password-confirmation",
-                    className: "form-label",
-                    children: "Confirm Password"
-                  }, undefined, false, undefined, this),
-                  /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("input", {
-                    id: "password-confirmation",
-                    name: "sign_up:password_confirmation",
-                    type: "password",
-                    className: "form-control",
-                    value: passwordConfirmation,
-                    onChange: (e) => setPasswordConfirmation(e.target.value),
-                    required: true
-                  }, undefined, false, undefined, this)
-                ]
-              }, undefined, true, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("button", {
-                type: "submit",
-                disabled: loading,
-                className: "btn btn-primary w-100",
-                "flow-id": "sign-up-button",
-                children: loading ? "Signing up..." : "Sign Up"
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("p", {
-            className: "text-center mt-3 mb-0",
-            children: [
-              "Already have an account? ",
-              /* @__PURE__ */ jsx_dev_runtime3.jsxDEV(Link, {
-                to: "/sign-in",
-                children: "Sign In"
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this)
-        ]
-      }, undefined, true, undefined, this)
-    }, undefined, false, undefined, this)
-  }, undefined, false, undefined, this);
+        children: [/* @__PURE__ */ import_jsx_runtime3.jsx("h1", {
+          className: "card-title text-center mb-4",
+          children: "Sign Up"
+        }), error && /* @__PURE__ */ import_jsx_runtime3.jsx("div", {
+          className: "alert alert-danger",
+          children: error
+        }), /* @__PURE__ */ import_jsx_runtime3.jsxs("form", {
+          onSubmit: handleSubmit,
+          children: [/* @__PURE__ */ import_jsx_runtime3.jsxs("div", {
+            className: "mb-3",
+            children: [/* @__PURE__ */ import_jsx_runtime3.jsx("label", {
+              htmlFor: "email",
+              className: "form-label",
+              children: "Email"
+            }), /* @__PURE__ */ import_jsx_runtime3.jsx("input", {
+              id: "email",
+              name: "sign_up:email",
+              type: "email",
+              className: "form-control",
+              value: email,
+              onChange: (e_0) => setEmail(e_0.target.value),
+              required: true,
+              autoFocus: true
+            })]
+          }), /* @__PURE__ */ import_jsx_runtime3.jsxs("div", {
+            className: "mb-3",
+            children: [/* @__PURE__ */ import_jsx_runtime3.jsx("label", {
+              htmlFor: "password",
+              className: "form-label",
+              children: "Password"
+            }), /* @__PURE__ */ import_jsx_runtime3.jsx("input", {
+              id: "password",
+              name: "sign_up:password",
+              type: "password",
+              className: "form-control",
+              value: password,
+              onChange: (e_1) => setPassword(e_1.target.value),
+              required: true
+            })]
+          }), /* @__PURE__ */ import_jsx_runtime3.jsxs("div", {
+            className: "mb-3",
+            children: [/* @__PURE__ */ import_jsx_runtime3.jsx("label", {
+              htmlFor: "password-confirmation",
+              className: "form-label",
+              children: "Confirm Password"
+            }), /* @__PURE__ */ import_jsx_runtime3.jsx("input", {
+              id: "password-confirmation",
+              name: "sign_up:password_confirmation",
+              type: "password",
+              className: "form-control",
+              value: passwordConfirmation,
+              onChange: (e_2) => setPasswordConfirmation(e_2.target.value),
+              required: true
+            })]
+          }), /* @__PURE__ */ import_jsx_runtime3.jsx("button", {
+            type: "submit",
+            disabled: loading,
+            className: "btn btn-primary w-100",
+            "flow-id": "sign-up-button",
+            children: loading ? "Signing up..." : "Sign Up"
+          })]
+        }), /* @__PURE__ */ import_jsx_runtime3.jsxs("p", {
+          className: "text-center mt-3 mb-0",
+          children: ["Already have an account? ", /* @__PURE__ */ import_jsx_runtime3.jsx(Link, {
+            to: "/sign-in",
+            children: "Sign In"
+          })]
+        })]
+      })
+    })
+  });
 }
+
+// src/js/pages/Dashboard.jsx
+var import_compiler_runtime2 = __toESM(require_compiler_runtime(), 1);
 
 // src/js/components/TodoList.jsx
 var import_react6 = __toESM(require_react(), 1);
 
 // src/js/components/TodoItem.jsx
 var import_react4 = __toESM(require_react(), 1);
-var jsx_dev_runtime4 = __toESM(require_jsx_dev_runtime(), 1);
-function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
+var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
+function TodoItem({
+  todo,
+  onToggle,
+  onUpdate,
+  onDelete
+}) {
   const [isEditing, setIsEditing] = import_react4.useState(false);
   const [editTitle, setEditTitle] = import_react4.useState(todo.title);
   const [isSubmitting, setIsSubmitting] = import_react4.useState(false);
@@ -19454,41 +19519,37 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
     setIsEditing(false);
   };
   if (isEditing) {
-    return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+    return /* @__PURE__ */ import_jsx_runtime4.jsx("div", {
       className: "list-group-item",
       "flow-id": "todo-item",
-      children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("form", {
+      children: /* @__PURE__ */ import_jsx_runtime4.jsx("form", {
         onSubmit: handleSubmit,
-        children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+        children: /* @__PURE__ */ import_jsx_runtime4.jsxs("div", {
           className: "input-group",
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("input", {
-              type: "text",
-              className: "form-control",
-              value: editTitle,
-              onChange: (e) => setEditTitle(e.target.value),
-              disabled: isSubmitting,
-              autoFocus: true,
-              "flow-id": "edit-input"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
-              type: "submit",
-              className: "btn btn-success",
-              disabled: isSubmitting || !editTitle.trim(),
-              "flow-id": "save-button",
-              children: "Save"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
-              type: "button",
-              className: "btn btn-secondary",
-              onClick: handleCancel,
-              disabled: isSubmitting,
-              children: "Cancel"
-            }, undefined, false, undefined, this)
-          ]
-        }, undefined, true, undefined, this)
-      }, undefined, false, undefined, this)
-    }, undefined, false, undefined, this);
+          children: [/* @__PURE__ */ import_jsx_runtime4.jsx("input", {
+            type: "text",
+            className: "form-control",
+            value: editTitle,
+            onChange: (e_0) => setEditTitle(e_0.target.value),
+            disabled: isSubmitting,
+            autoFocus: true,
+            "flow-id": "edit-input"
+          }), /* @__PURE__ */ import_jsx_runtime4.jsx("button", {
+            type: "submit",
+            className: "btn btn-success",
+            disabled: isSubmitting || !editTitle.trim(),
+            "flow-id": "save-button",
+            children: "Save"
+          }), /* @__PURE__ */ import_jsx_runtime4.jsx("button", {
+            type: "button",
+            className: "btn btn-secondary",
+            onClick: handleCancel,
+            disabled: isSubmitting,
+            children: "Cancel"
+          })]
+        })
+      })
+    });
   }
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -19500,85 +19561,64 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
       minute: "2-digit"
     });
   };
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+  return /* @__PURE__ */ import_jsx_runtime4.jsx("div", {
     className: "list-group-item",
     "flow-id": "todo-item",
-    children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+    children: /* @__PURE__ */ import_jsx_runtime4.jsxs("div", {
       className: "d-flex justify-content-between align-items-start",
-      children: [
-        /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
-          className: "d-flex align-items-start flex-grow-1",
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("input", {
-              type: "checkbox",
-              className: "form-check-input me-3 mt-1",
-              checked: todo.completed,
-              onChange: () => onToggle(todo.id, todo.completed)
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
-              className: "flex-grow-1",
-              children: [
-                /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-                  className: `d-block ${todo.completed ? "text-decoration-line-through text-muted" : ""}`,
-                  style: { cursor: "pointer" },
-                  onClick: () => setIsEditing(true),
-                  children: todo.title
-                }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("small", {
-                  className: "text-muted",
-                  children: [
-                    /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-                      className: "badge bg-secondary me-2",
-                      children: [
-                        "ID: ",
-                        todo.id
-                      ]
-                    }, undefined, true, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-                      className: "me-2",
-                      children: [
-                        "Created: ",
-                        formatDate(todo.created_at)
-                      ]
-                    }, undefined, true, undefined, this),
-                    /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-                      children: [
-                        "Updated: ",
-                        formatDate(todo.updated_at)
-                      ]
-                    }, undefined, true, undefined, this)
-                  ]
-                }, undefined, true, undefined, this)
-              ]
-            }, undefined, true, undefined, this)
-          ]
-        }, undefined, true, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
-          className: "btn-group ms-2",
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
-              className: "btn btn-sm btn-outline-primary",
-              onClick: () => setIsEditing(true),
-              "flow-id": "edit-button",
-              children: "Edit"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
-              className: "btn btn-sm btn-outline-danger",
-              onClick: () => onDelete(todo.id),
-              "flow-id": "delete-button",
-              children: "Delete"
-            }, undefined, false, undefined, this)
-          ]
-        }, undefined, true, undefined, this)
-      ]
-    }, undefined, true, undefined, this)
-  }, undefined, false, undefined, this);
+      children: [/* @__PURE__ */ import_jsx_runtime4.jsxs("div", {
+        className: "d-flex align-items-start flex-grow-1",
+        children: [/* @__PURE__ */ import_jsx_runtime4.jsx("input", {
+          type: "checkbox",
+          className: "form-check-input me-3 mt-1",
+          checked: todo.completed,
+          onChange: () => onToggle(todo.id, todo.completed)
+        }), /* @__PURE__ */ import_jsx_runtime4.jsxs("div", {
+          className: "flex-grow-1",
+          children: [/* @__PURE__ */ import_jsx_runtime4.jsx("span", {
+            className: `d-block ${todo.completed ? "text-decoration-line-through text-muted" : ""}`,
+            style: {
+              cursor: "pointer"
+            },
+            onClick: () => setIsEditing(true),
+            children: todo.title
+          }), /* @__PURE__ */ import_jsx_runtime4.jsxs("small", {
+            className: "text-muted",
+            children: [/* @__PURE__ */ import_jsx_runtime4.jsxs("span", {
+              className: "badge bg-secondary me-2",
+              children: ["ID: ", todo.id]
+            }), /* @__PURE__ */ import_jsx_runtime4.jsxs("span", {
+              className: "me-2",
+              children: ["Created: ", formatDate(todo.created_at)]
+            }), /* @__PURE__ */ import_jsx_runtime4.jsxs("span", {
+              children: ["Updated: ", formatDate(todo.updated_at)]
+            })]
+          })]
+        })]
+      }), /* @__PURE__ */ import_jsx_runtime4.jsxs("div", {
+        className: "btn-group ms-2",
+        children: [/* @__PURE__ */ import_jsx_runtime4.jsx("button", {
+          className: "btn btn-sm btn-outline-primary",
+          onClick: () => setIsEditing(true),
+          "flow-id": "edit-button",
+          children: "Edit"
+        }), /* @__PURE__ */ import_jsx_runtime4.jsx("button", {
+          className: "btn btn-sm btn-outline-danger",
+          onClick: () => onDelete(todo.id),
+          "flow-id": "delete-button",
+          children: "Delete"
+        })]
+      })]
+    })
+  });
 }
 
 // src/js/components/TodoForm.jsx
 var import_react5 = __toESM(require_react(), 1);
-var jsx_dev_runtime5 = __toESM(require_jsx_dev_runtime(), 1);
-function TodoForm({ onSubmit }) {
+var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
+function TodoForm({
+  onSubmit
+}) {
   const [title, setTitle] = import_react5.useState("");
   const [isSubmitting, setIsSubmitting] = import_react5.useState(false);
   const handleSubmit = async (e) => {
@@ -19593,34 +19633,31 @@ function TodoForm({ onSubmit }) {
       setIsSubmitting(false);
     }
   };
-  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("form", {
+  return /* @__PURE__ */ import_jsx_runtime5.jsx("form", {
     onSubmit: handleSubmit,
-    children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+    children: /* @__PURE__ */ import_jsx_runtime5.jsxs("div", {
       className: "input-group",
-      children: [
-        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("input", {
-          type: "text",
-          className: "form-control",
-          placeholder: "Add a new todo...",
-          value: title,
-          onChange: (e) => setTitle(e.target.value),
-          disabled: isSubmitting,
-          "flow-id": "new-todo-input"
-        }, undefined, false, undefined, this),
-        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
-          type: "submit",
-          className: "btn btn-primary",
-          disabled: isSubmitting || !title.trim(),
-          "flow-id": "add-todo-button",
-          children: isSubmitting ? "Adding..." : "Add Todo"
-        }, undefined, false, undefined, this)
-      ]
-    }, undefined, true, undefined, this)
-  }, undefined, false, undefined, this);
+      children: [/* @__PURE__ */ import_jsx_runtime5.jsx("input", {
+        type: "text",
+        className: "form-control",
+        placeholder: "Add a new todo...",
+        value: title,
+        onChange: (e_0) => setTitle(e_0.target.value),
+        disabled: isSubmitting,
+        "flow-id": "new-todo-input"
+      }), /* @__PURE__ */ import_jsx_runtime5.jsx("button", {
+        type: "submit",
+        className: "btn btn-primary",
+        disabled: isSubmitting || !title.trim(),
+        "flow-id": "add-todo-button",
+        children: isSubmitting ? "Adding..." : "Add Todo"
+      })]
+    })
+  });
 }
 
 // src/js/components/TodoList.jsx
-var jsx_dev_runtime6 = __toESM(require_jsx_dev_runtime(), 1);
+var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
 function TodoList() {
   const [todos, setTodos] = import_react6.useState([]);
   const [loading, setLoading] = import_react6.useState(true);
@@ -19649,189 +19686,218 @@ function TodoList() {
       const newTodo = await apiService.createTodo(title);
       setTodos([newTodo, ...todos]);
       setError("");
-    } catch (err) {
-      setError(err.message || "Failed to create todo");
-      throw err;
+    } catch (err_0) {
+      setError(err_0.message || "Failed to create todo");
+      throw err_0;
     }
   };
   const handleToggle = async (id, completed) => {
     try {
       const todo = todos.find((t) => t.id === id);
       const updated = await apiService.updateTodo(id, todo.title, !completed);
-      setTodos(todos.map((t) => t.id === id ? updated : t));
+      setTodos(todos.map((t_0) => t_0.id === id ? updated : t_0));
       setError("");
-    } catch (err) {
-      setError(err.message || "Failed to update todo");
+    } catch (err_1) {
+      setError(err_1.message || "Failed to update todo");
     }
   };
-  const handleUpdate = async (id, title) => {
+  const handleUpdate = async (id_0, title_0) => {
     try {
-      const todo = todos.find((t) => t.id === id);
-      const updated = await apiService.updateTodo(id, title, todo.completed);
-      setTodos(todos.map((t) => t.id === id ? updated : t));
+      const todo_0 = todos.find((t_1) => t_1.id === id_0);
+      const updated_0 = await apiService.updateTodo(id_0, title_0, todo_0.completed);
+      setTodos(todos.map((t_2) => t_2.id === id_0 ? updated_0 : t_2));
       setError("");
-    } catch (err) {
-      setError(err.message || "Failed to update todo");
-      throw err;
+    } catch (err_2) {
+      setError(err_2.message || "Failed to update todo");
+      throw err_2;
     }
   };
-  const handleDelete = async (id) => {
+  const handleDelete = async (id_1) => {
     if (!confirm("Are you sure you want to delete this todo?"))
       return;
     try {
-      await apiService.deleteTodo(id);
-      setTodos(todos.filter((t) => t.id !== id));
+      await apiService.deleteTodo(id_1);
+      setTodos(todos.filter((t_3) => t_3.id !== id_1));
       setError("");
-    } catch (err) {
-      setError(err.message || "Failed to delete todo");
+    } catch (err_3) {
+      setError(err_3.message || "Failed to delete todo");
     }
   };
   if (loading && todos.length === 0) {
-    return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+    return /* @__PURE__ */ import_jsx_runtime6.jsx("div", {
       className: "text-center py-5",
-      children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+      children: /* @__PURE__ */ import_jsx_runtime6.jsx("div", {
         className: "spinner-border",
         role: "status",
-        children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+        children: /* @__PURE__ */ import_jsx_runtime6.jsx("span", {
           className: "visually-hidden",
           children: "Loading..."
-        }, undefined, false, undefined, this)
-      }, undefined, false, undefined, this)
-    }, undefined, false, undefined, this);
+        })
+      })
+    });
   }
-  return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
-    children: [
-      error && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
-        className: "alert alert-danger alert-dismissible fade show",
-        role: "alert",
-        children: [
-          error,
-          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
-            type: "button",
-            className: "btn-close",
-            onClick: () => setError("")
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(TodoForm, {
-        onSubmit: handleCreate
-      }, undefined, false, undefined, this),
-      todos.length === 0 ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
-        className: "alert alert-info mt-4",
-        children: "No todos yet. Create one to get started!"
-      }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(jsx_dev_runtime6.Fragment, {
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
-            className: "list-group mt-4",
-            "flow-id": "todo-list",
-            children: todos.map((todo) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(TodoItem, {
-              todo,
-              onToggle: handleToggle,
-              onUpdate: handleUpdate,
-              onDelete: handleDelete
-            }, todo.id, false, undefined, this))
-          }, undefined, false, undefined, this),
-          pagination && pagination.total_pages > 1 && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("nav", {
-            className: "mt-4",
-            children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("ul", {
-              className: "pagination justify-content-center",
-              children: [
-                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
-                  className: `page-item ${!pagination.previous_page ? "disabled" : ""}`,
-                  children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
-                    className: "page-link",
-                    onClick: () => fetchTodos(page - 1),
-                    disabled: !pagination.previous_page,
-                    children: "Previous"
-                  }, undefined, false, undefined, this)
-                }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
-                  className: "page-item disabled",
-                  children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
-                    className: "page-link",
-                    children: [
-                      "Page ",
-                      page,
-                      " of ",
-                      pagination.total_pages
-                    ]
-                  }, undefined, true, undefined, this)
-                }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
-                  className: `page-item ${!pagination.next_page ? "disabled" : ""}`,
-                  children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
-                    className: "page-link",
-                    onClick: () => fetchTodos(page + 1),
-                    disabled: !pagination.next_page,
-                    children: "Next"
-                  }, undefined, false, undefined, this)
-                }, undefined, false, undefined, this)
-              ]
-            }, undefined, true, undefined, this)
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
+  return /* @__PURE__ */ import_jsx_runtime6.jsxs("div", {
+    children: [error && /* @__PURE__ */ import_jsx_runtime6.jsxs("div", {
+      className: "alert alert-danger alert-dismissible fade show",
+      role: "alert",
+      children: [error, /* @__PURE__ */ import_jsx_runtime6.jsx("button", {
+        type: "button",
+        className: "btn-close",
+        onClick: () => setError("")
+      })]
+    }), /* @__PURE__ */ import_jsx_runtime6.jsx(TodoForm, {
+      onSubmit: handleCreate
+    }), todos.length === 0 ? /* @__PURE__ */ import_jsx_runtime6.jsx("div", {
+      className: "alert alert-info mt-4",
+      children: "No todos yet. Create one to get started!"
+    }) : /* @__PURE__ */ import_jsx_runtime6.jsxs(import_jsx_runtime6.Fragment, {
+      children: [/* @__PURE__ */ import_jsx_runtime6.jsx("div", {
+        className: "list-group mt-4",
+        "flow-id": "todo-list",
+        children: todos.map((todo_1) => /* @__PURE__ */ import_jsx_runtime6.jsx(TodoItem, {
+          todo: todo_1,
+          onToggle: handleToggle,
+          onUpdate: handleUpdate,
+          onDelete: handleDelete
+        }, todo_1.id))
+      }), pagination && pagination.total_pages > 1 && /* @__PURE__ */ import_jsx_runtime6.jsx("nav", {
+        className: "mt-4",
+        children: /* @__PURE__ */ import_jsx_runtime6.jsxs("ul", {
+          className: "pagination justify-content-center",
+          children: [/* @__PURE__ */ import_jsx_runtime6.jsx("li", {
+            className: `page-item ${!pagination.previous_page ? "disabled" : ""}`,
+            children: /* @__PURE__ */ import_jsx_runtime6.jsx("button", {
+              className: "page-link",
+              onClick: () => fetchTodos(page - 1),
+              disabled: !pagination.previous_page,
+              children: "Previous"
+            })
+          }), /* @__PURE__ */ import_jsx_runtime6.jsx("li", {
+            className: "page-item disabled",
+            children: /* @__PURE__ */ import_jsx_runtime6.jsxs("span", {
+              className: "page-link",
+              children: ["Page ", page, " of ", pagination.total_pages]
+            })
+          }), /* @__PURE__ */ import_jsx_runtime6.jsx("li", {
+            className: `page-item ${!pagination.next_page ? "disabled" : ""}`,
+            children: /* @__PURE__ */ import_jsx_runtime6.jsx("button", {
+              className: "page-link",
+              onClick: () => fetchTodos(page + 1),
+              disabled: !pagination.next_page,
+              children: "Next"
+            })
+          })]
+        })
+      })]
+    })]
+  });
 }
 
 // src/js/pages/Dashboard.jsx
-var jsx_dev_runtime7 = __toESM(require_jsx_dev_runtime(), 1);
+var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
 function Dashboard() {
-  const { user, signOut } = useAuth();
+  const $ = import_compiler_runtime2.c(14);
+  const {
+    user,
+    signOut
+  } = useAuth();
   const navigate = useNavigate();
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/sign-in");
-  };
-  return /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
-    className: "container-fluid",
-    children: [
-      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("nav", {
-        className: "navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm",
-        children: /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
-          className: "container-fluid",
-          children: [
-            /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("span", {
-              className: "navbar-brand mb-0 h1",
-              children: [
-                /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("i", {
-                  className: "bi bi-check2-square"
-                }, undefined, false, undefined, this),
-                " Todo App"
-              ]
-            }, undefined, true, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
-              className: "d-flex align-items-center",
-              children: [
-                /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("span", {
-                  className: "me-3 text-muted",
-                  children: user?.email
-                }, undefined, false, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("button", {
-                  onClick: handleSignOut,
-                  className: "btn btn-outline-secondary btn-sm",
-                  "flow-id": "sign-out-button",
-                  children: "Sign Out"
-                }, undefined, false, undefined, this)
-              ]
-            }, undefined, true, undefined, this)
-          ]
-        }, undefined, true, undefined, this)
-      }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("main", {
-        className: "container py-4",
-        style: { maxWidth: "800px" },
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("h2", {
-            className: "mb-4",
-            children: "Dashboard"
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(TodoList, {}, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
+  let t0;
+  if ($[0] !== navigate || $[1] !== signOut) {
+    t0 = async () => {
+      await signOut();
+      navigate("/sign-in");
+    };
+    $[0] = navigate;
+    $[1] = signOut;
+    $[2] = t0;
+  } else {
+    t0 = $[2];
+  }
+  const handleSignOut = t0;
+  let t1;
+  if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
+    t1 = /* @__PURE__ */ import_jsx_runtime7.jsxs("span", {
+      className: "navbar-brand mb-0 h1",
+      children: [/* @__PURE__ */ import_jsx_runtime7.jsx("i", {
+        className: "bi bi-check2-square"
+      }), " Todo App"]
+    });
+    $[3] = t1;
+  } else {
+    t1 = $[3];
+  }
+  const t2 = user?.email;
+  let t3;
+  if ($[4] !== t2) {
+    t3 = /* @__PURE__ */ import_jsx_runtime7.jsx("span", {
+      className: "me-3 text-muted",
+      children: t2
+    });
+    $[4] = t2;
+    $[5] = t3;
+  } else {
+    t3 = $[5];
+  }
+  let t4;
+  if ($[6] !== handleSignOut) {
+    t4 = /* @__PURE__ */ import_jsx_runtime7.jsx("button", {
+      onClick: handleSignOut,
+      className: "btn btn-outline-secondary btn-sm",
+      "flow-id": "sign-out-button",
+      children: "Sign Out"
+    });
+    $[6] = handleSignOut;
+    $[7] = t4;
+  } else {
+    t4 = $[7];
+  }
+  let t5;
+  if ($[8] !== t3 || $[9] !== t4) {
+    t5 = /* @__PURE__ */ import_jsx_runtime7.jsx("nav", {
+      className: "navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm",
+      children: /* @__PURE__ */ import_jsx_runtime7.jsxs("div", {
+        className: "container-fluid",
+        children: [t1, /* @__PURE__ */ import_jsx_runtime7.jsxs("div", {
+          className: "d-flex align-items-center",
+          children: [t3, t4]
+        })]
+      })
+    });
+    $[8] = t3;
+    $[9] = t4;
+    $[10] = t5;
+  } else {
+    t5 = $[10];
+  }
+  let t6;
+  if ($[11] === Symbol.for("react.memo_cache_sentinel")) {
+    t6 = /* @__PURE__ */ import_jsx_runtime7.jsxs("main", {
+      className: "container py-4",
+      style: {
+        maxWidth: "800px"
+      },
+      children: [/* @__PURE__ */ import_jsx_runtime7.jsx("h2", {
+        className: "mb-4",
+        children: "Dashboard"
+      }), /* @__PURE__ */ import_jsx_runtime7.jsx(TodoList, {})]
+    });
+    $[11] = t6;
+  } else {
+    t6 = $[11];
+  }
+  let t7;
+  if ($[12] !== t5) {
+    t7 = /* @__PURE__ */ import_jsx_runtime7.jsxs("div", {
+      className: "container-fluid",
+      children: [t5, t6]
+    });
+    $[12] = t5;
+    $[13] = t7;
+  } else {
+    t7 = $[13];
+  }
+  return t7;
 }
 
 // node_modules/@popperjs/core/lib/index.js
@@ -24889,73 +24955,143 @@ enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
 
 // src/js/app.tsx
-var jsx_dev_runtime8 = __toESM(require_jsx_dev_runtime(), 1);
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) {
-    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
-      children: "Loading..."
-    }, undefined, false, undefined, this);
-  }
-  return isAuthenticated ? /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(jsx_dev_runtime8.Fragment, {
+var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
+function ProtectedRoute(t0) {
+  const $ = import_compiler_runtime3.c(4);
+  const {
     children
-  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Navigate, {
-    to: "/sign-in"
-  }, undefined, false, undefined, this);
+  } = t0;
+  const {
+    isAuthenticated,
+    loading
+  } = useAuth();
+  if (loading) {
+    let t12;
+    if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+      t12 = /* @__PURE__ */ import_jsx_runtime8.jsx("div", {
+        children: "Loading..."
+      });
+      $[0] = t12;
+    } else {
+      t12 = $[0];
+    }
+    return t12;
+  }
+  let t1;
+  if ($[1] !== children || $[2] !== isAuthenticated) {
+    t1 = isAuthenticated ? /* @__PURE__ */ import_jsx_runtime8.jsx(import_jsx_runtime8.Fragment, {
+      children
+    }) : /* @__PURE__ */ import_jsx_runtime8.jsx(Navigate, {
+      to: "/sign-in"
+    });
+    $[1] = children;
+    $[2] = isAuthenticated;
+    $[3] = t1;
+  } else {
+    t1 = $[3];
+  }
+  return t1;
 }
-function PublicRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) {
-    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
-      children: "Loading..."
-    }, undefined, false, undefined, this);
-  }
-  return !isAuthenticated ? /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(jsx_dev_runtime8.Fragment, {
+function PublicRoute(t0) {
+  const $ = import_compiler_runtime3.c(4);
+  const {
     children
-  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Navigate, {
-    to: "/dashboard"
-  }, undefined, false, undefined, this);
+  } = t0;
+  const {
+    isAuthenticated,
+    loading
+  } = useAuth();
+  if (loading) {
+    let t12;
+    if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+      t12 = /* @__PURE__ */ import_jsx_runtime8.jsx("div", {
+        children: "Loading..."
+      });
+      $[0] = t12;
+    } else {
+      t12 = $[0];
+    }
+    return t12;
+  }
+  let t1;
+  if ($[1] !== children || $[2] !== isAuthenticated) {
+    t1 = !isAuthenticated ? /* @__PURE__ */ import_jsx_runtime8.jsx(import_jsx_runtime8.Fragment, {
+      children
+    }) : /* @__PURE__ */ import_jsx_runtime8.jsx(Navigate, {
+      to: "/dashboard"
+    });
+    $[1] = children;
+    $[2] = isAuthenticated;
+    $[3] = t1;
+  } else {
+    t1 = $[3];
+  }
+  return t1;
 }
 function App() {
-  return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(BrowserRouter, {
-    children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(AuthProvider, {
-      children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Routes, {
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
-            path: "/sign-in",
-            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(PublicRoute, {
-              children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SignIn, {}, undefined, false, undefined, this)
-            }, undefined, false, undefined, this)
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
-            path: "/sign-up",
-            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(PublicRoute, {
-              children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SignUp, {}, undefined, false, undefined, this)
-            }, undefined, false, undefined, this)
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
-            path: "/dashboard",
-            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(ProtectedRoute, {
-              children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Dashboard, {}, undefined, false, undefined, this)
-            }, undefined, false, undefined, this)
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
+  const $ = import_compiler_runtime3.c(4);
+  let t0;
+  if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+    t0 = /* @__PURE__ */ import_jsx_runtime8.jsx(Route, {
+      path: "/sign-in",
+      element: /* @__PURE__ */ import_jsx_runtime8.jsx(PublicRoute, {
+        children: /* @__PURE__ */ import_jsx_runtime8.jsx(SignIn, {})
+      })
+    });
+    $[0] = t0;
+  } else {
+    t0 = $[0];
+  }
+  let t1;
+  if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
+    t1 = /* @__PURE__ */ import_jsx_runtime8.jsx(Route, {
+      path: "/sign-up",
+      element: /* @__PURE__ */ import_jsx_runtime8.jsx(PublicRoute, {
+        children: /* @__PURE__ */ import_jsx_runtime8.jsx(SignUp, {})
+      })
+    });
+    $[1] = t1;
+  } else {
+    t1 = $[1];
+  }
+  let t2;
+  if ($[2] === Symbol.for("react.memo_cache_sentinel")) {
+    t2 = /* @__PURE__ */ import_jsx_runtime8.jsx(Route, {
+      path: "/dashboard",
+      element: /* @__PURE__ */ import_jsx_runtime8.jsx(ProtectedRoute, {
+        children: /* @__PURE__ */ import_jsx_runtime8.jsx(Dashboard, {})
+      })
+    });
+    $[2] = t2;
+  } else {
+    t2 = $[2];
+  }
+  let t3;
+  if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
+    t3 = /* @__PURE__ */ import_jsx_runtime8.jsx(BrowserRouter, {
+      children: /* @__PURE__ */ import_jsx_runtime8.jsx(AuthProvider, {
+        children: /* @__PURE__ */ import_jsx_runtime8.jsxs(Routes, {
+          children: [t0, t1, t2, /* @__PURE__ */ import_jsx_runtime8.jsx(Route, {
             path: "/",
-            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Navigate, {
+            element: /* @__PURE__ */ import_jsx_runtime8.jsx(Navigate, {
               to: "/dashboard"
-            }, undefined, false, undefined, this)
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this)
-    }, undefined, false, undefined, this)
-  }, undefined, false, undefined, this);
+            })
+          })]
+        })
+      })
+    });
+    $[3] = t3;
+  } else {
+    t3 = $[3];
+  }
+  return t3;
 }
 var rootElement = document.getElementById("root");
 if (rootElement) {
   const root = import_client.createRoot(rootElement);
-  root.render(/* @__PURE__ */ jsx_dev_runtime8.jsxDEV(App, {}, undefined, false, undefined, this));
+  root.render(/* @__PURE__ */ import_jsx_runtime8.jsx(App, {}));
 } else {
   console.error('Root element not found. Make sure there is a <div id="root"></div> in your HTML.');
 }
 
-//# debugId=99694ED3FB13BD8B64756E2164756E21
+//# debugId=64B9D8E116B913C664756E2164756E21
