@@ -13,6 +13,7 @@ class Api::Todos::Index < ApiAction
     )
 
     todos = todos_query
+      .updated_at.desc_order
       .offset(paginator.offset)
       .limit(per_page)
       .results

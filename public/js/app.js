@@ -19490,46 +19490,89 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
       }, undefined, false, undefined, this)
     }, undefined, false, undefined, this);
   }
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
   return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
-    className: "list-group-item d-flex justify-content-between align-items-center",
+    className: "list-group-item",
     "flow-id": "todo-item",
-    children: [
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
-        className: "d-flex align-items-center flex-grow-1",
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("input", {
-            type: "checkbox",
-            className: "form-check-input me-3",
-            checked: todo.completed,
-            onChange: () => onToggle(todo.id, todo.completed)
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-            className: `flex-grow-1 ${todo.completed ? "text-decoration-line-through text-muted" : ""}`,
-            style: { cursor: "pointer" },
-            onClick: () => setIsEditing(true),
-            children: todo.title
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
-        className: "btn-group",
-        children: [
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
-            className: "btn btn-sm btn-outline-primary",
-            onClick: () => setIsEditing(true),
-            "flow-id": "edit-button",
-            children: "Edit"
-          }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
-            className: "btn btn-sm btn-outline-danger",
-            onClick: () => onDelete(todo.id),
-            "flow-id": "delete-button",
-            children: "Delete"
-          }, undefined, false, undefined, this)
-        ]
-      }, undefined, true, undefined, this)
-    ]
-  }, undefined, true, undefined, this);
+    children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+      className: "d-flex justify-content-between align-items-start",
+      children: [
+        /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+          className: "d-flex align-items-start flex-grow-1",
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("input", {
+              type: "checkbox",
+              className: "form-check-input me-3 mt-1",
+              checked: todo.completed,
+              onChange: () => onToggle(todo.id, todo.completed)
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+              className: "flex-grow-1",
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
+                  className: `d-block ${todo.completed ? "text-decoration-line-through text-muted" : ""}`,
+                  style: { cursor: "pointer" },
+                  onClick: () => setIsEditing(true),
+                  children: todo.title
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("small", {
+                  className: "text-muted",
+                  children: [
+                    /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
+                      className: "badge bg-secondary me-2",
+                      children: [
+                        "ID: ",
+                        todo.id
+                      ]
+                    }, undefined, true, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
+                      className: "me-2",
+                      children: [
+                        "Created: ",
+                        formatDate(todo.created_at)
+                      ]
+                    }, undefined, true, undefined, this),
+                    /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
+                      children: [
+                        "Updated: ",
+                        formatDate(todo.updated_at)
+                      ]
+                    }, undefined, true, undefined, this)
+                  ]
+                }, undefined, true, undefined, this)
+              ]
+            }, undefined, true, undefined, this)
+          ]
+        }, undefined, true, undefined, this),
+        /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+          className: "btn-group ms-2",
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+              className: "btn btn-sm btn-outline-primary",
+              onClick: () => setIsEditing(true),
+              "flow-id": "edit-button",
+              children: "Edit"
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+              className: "btn btn-sm btn-outline-danger",
+              onClick: () => onDelete(todo.id),
+              "flow-id": "delete-button",
+              children: "Delete"
+            }, undefined, false, undefined, this)
+          ]
+        }, undefined, true, undefined, this)
+      ]
+    }, undefined, true, undefined, this)
+  }, undefined, false, undefined, this);
 }
 
 // src/js/components/TodoForm.jsx
@@ -24915,4 +24958,4 @@ if (rootElement) {
   console.error('Root element not found. Make sure there is a <div id="root"></div> in your HTML.');
 }
 
-//# debugId=18F73CFA7F3E66E464756E2164756E21
+//# debugId=99694ED3FB13BD8B64756E2164756E21
