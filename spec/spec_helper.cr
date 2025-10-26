@@ -7,7 +7,6 @@ require "lucky_flow/ext/avram"
 
 require "lucky_flow/ext/authentic"
 require "../src/app"
-require "./support/flows/base_flow"
 require "./support/**"
 require "../db/migrations/**"
 

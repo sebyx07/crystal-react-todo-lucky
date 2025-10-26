@@ -95,9 +95,8 @@ src/
 └── css/              # app.scss (Bootstrap imports)
 
 spec/
-├── requests/api/     # API endpoint tests
-├── flows/           # LuckyFlow integration tests (skipped - needs browser)
-└── src/js/**/*.test.* # Frontend unit tests
+├── requests/api/     # API endpoint tests (Crystal)
+└── src/js/**/*.test.* # Frontend unit tests (Vitest)
 ```
 
 ## Security
