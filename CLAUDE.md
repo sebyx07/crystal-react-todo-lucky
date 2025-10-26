@@ -43,12 +43,15 @@ bin/lint --check     # Check only
 - Factories: `UserFactory.create`, `TodoFactory.create`
 - API specs: `ApiClient.exec(Action, params)`
 - Frontend: Vitest + React Testing Library
+- Integration: LuckyFlow (pending - requires browser in Docker)
 - Import React in JSX for Vitest compatibility
+- flow-id attributes: `flow-id="button-name"` for LuckyFlow selectors
 
 **Build:**
 - `build.js` = Bun bundler script (replaces Webpack)
 - Generates `mix-manifest.json` with content hashes
 - Watch mode: `bun run dev`
+- SCSS deprecation warnings silenced (Bootstrap 5 legacy code)
 
 ## Gotchas
 
@@ -92,8 +95,11 @@ src/
 │   └── components/   # TodoList.jsx, TodoItem.jsx
 └── css/              # app.scss (Bootstrap imports)
 
-spec/requests/api/    # API endpoint tests
-src/js/**/*.test.*    # Frontend unit tests
+spec/
+├── requests/api/     # API endpoint tests
+├── flows/           # LuckyFlow integration tests (pending - needs browser)
+├── support/flows/   # Flow helpers (TodoFlow, BaseFlow)
+└── src/js/**/*.test.* # Frontend unit tests
 ```
 
 ## Security

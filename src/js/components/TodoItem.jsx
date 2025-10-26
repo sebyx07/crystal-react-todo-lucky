@@ -27,7 +27,7 @@ export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
 
   if (isEditing) {
     return (
-      <div className="list-group-item">
+      <div className="list-group-item" flow-id="todo-item">
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <input
@@ -37,11 +37,13 @@ export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
               onChange={(e) => setEditTitle(e.target.value)}
               disabled={isSubmitting}
               autoFocus
+              flow-id="edit-input"
             />
             <button
               type="submit"
               className="btn btn-success"
               disabled={isSubmitting || !editTitle.trim()}
+              flow-id="save-button"
             >
               Save
             </button>
@@ -60,7 +62,7 @@ export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
   }
 
   return (
-    <div className="list-group-item d-flex justify-content-between align-items-center">
+    <div className="list-group-item d-flex justify-content-between align-items-center" flow-id="todo-item">
       <div className="d-flex align-items-center flex-grow-1">
         <input
           type="checkbox"
@@ -80,12 +82,14 @@ export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
         <button
           className="btn btn-sm btn-outline-primary"
           onClick={() => setIsEditing(true)}
+          flow-id="edit-button"
         >
           Edit
         </button>
         <button
           className="btn btn-sm btn-outline-danger"
           onClick={() => onDelete(todo.id)}
+          flow-id="delete-button"
         >
           Delete
         </button>

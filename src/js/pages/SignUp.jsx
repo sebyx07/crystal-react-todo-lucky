@@ -43,6 +43,7 @@ export default function SignUp() {
               <label htmlFor="email" className="form-label">Email</label>
               <input
                 id="email"
+                name="sign_up:email"
                 type="email"
                 className="form-control"
                 value={email}
@@ -55,6 +56,7 @@ export default function SignUp() {
               <label htmlFor="password" className="form-label">Password</label>
               <input
                 id="password"
+                name="sign_up:password"
                 type="password"
                 className="form-control"
                 value={password}
@@ -66,6 +68,7 @@ export default function SignUp() {
               <label htmlFor="password-confirmation" className="form-label">Confirm Password</label>
               <input
                 id="password-confirmation"
+                name="sign_up:password_confirmation"
                 type="password"
                 className="form-control"
                 value={passwordConfirmation}
@@ -73,7 +76,7 @@ export default function SignUp() {
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="btn btn-primary w-100">
+            <button type="submit" disabled={loading} className="btn btn-primary w-100" flow-id="sign-up-button">
               {loading ? 'Signing up...' : 'Sign Up'}
             </button>
           </form>

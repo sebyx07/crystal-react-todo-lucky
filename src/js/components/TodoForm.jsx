@@ -29,11 +29,13 @@ export default function TodoForm({ onSubmit }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isSubmitting}
+          flow-id="new-todo-input"
         />
         <button
           type="submit"
           className="btn btn-primary"
           disabled={isSubmitting || !title.trim()}
+          flow-id="add-todo-button"
         >
           {isSubmitting ? 'Adding...' : 'Add Todo'}
         </button>

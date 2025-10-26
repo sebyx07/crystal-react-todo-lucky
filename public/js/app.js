@@ -19089,6 +19089,12 @@ class ApiService {
       body: JSON.stringify(data2)
     });
   }
+  async patch(endpoint, data2) {
+    return this.request(endpoint, {
+      method: "PATCH",
+      body: JSON.stringify(data2)
+    });
+  }
   async delete(endpoint) {
     return this.request(endpoint, { method: "DELETE" });
   }
@@ -19142,7 +19148,7 @@ function AuthProvider({ children }) {
         try {
           const userData = await apiService.getCurrentUser();
           setUser(userData);
-        } catch (error) {
+        } catch (_error) {
           apiService.clearToken();
         }
       }
@@ -19236,6 +19242,7 @@ function SignIn() {
                   }, undefined, false, undefined, this),
                   /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("input", {
                     id: "email",
+                    name: "sign_in:email",
                     type: "email",
                     className: "form-control",
                     value: email,
@@ -19255,6 +19262,7 @@ function SignIn() {
                   }, undefined, false, undefined, this),
                   /* @__PURE__ */ jsx_dev_runtime2.jsxDEV("input", {
                     id: "password",
+                    name: "sign_in:password",
                     type: "password",
                     className: "form-control",
                     value: password,
@@ -19267,6 +19275,7 @@ function SignIn() {
                 type: "submit",
                 disabled: loading,
                 className: "btn btn-primary w-100",
+                "flow-id": "sign-in-button",
                 children: loading ? "Signing in..." : "Sign In"
               }, undefined, false, undefined, this)
             ]
@@ -19277,6 +19286,7 @@ function SignIn() {
               "Don't have an account? ",
               /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Link, {
                 to: "/sign-up",
+                "flow-id": "sign-up-link",
                 children: "Sign Up"
               }, undefined, false, undefined, this)
             ]
@@ -19344,6 +19354,7 @@ function SignUp() {
                   }, undefined, false, undefined, this),
                   /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("input", {
                     id: "email",
+                    name: "sign_up:email",
                     type: "email",
                     className: "form-control",
                     value: email,
@@ -19363,6 +19374,7 @@ function SignUp() {
                   }, undefined, false, undefined, this),
                   /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("input", {
                     id: "password",
+                    name: "sign_up:password",
                     type: "password",
                     className: "form-control",
                     value: password,
@@ -19381,6 +19393,7 @@ function SignUp() {
                   }, undefined, false, undefined, this),
                   /* @__PURE__ */ jsx_dev_runtime3.jsxDEV("input", {
                     id: "password-confirmation",
+                    name: "sign_up:password_confirmation",
                     type: "password",
                     className: "form-control",
                     value: passwordConfirmation,
@@ -19393,6 +19406,7 @@ function SignUp() {
                 type: "submit",
                 disabled: loading,
                 className: "btn btn-primary w-100",
+                "flow-id": "sign-up-button",
                 children: loading ? "Signing up..." : "Sign Up"
               }, undefined, false, undefined, this)
             ]
@@ -19431,7 +19445,7 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
       setIsSubmitting(true);
       await onUpdate(todo.id, editTitle.trim());
       setIsEditing(false);
-    } catch (err) {} finally {
+    } catch (_err) {} finally {
       setIsSubmitting(false);
     }
   };
@@ -19442,6 +19456,7 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
   if (isEditing) {
     return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
       className: "list-group-item",
+      "flow-id": "todo-item",
       children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("form", {
         onSubmit: handleSubmit,
         children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
@@ -19453,12 +19468,14 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
               value: editTitle,
               onChange: (e) => setEditTitle(e.target.value),
               disabled: isSubmitting,
-              autoFocus: true
+              autoFocus: true,
+              "flow-id": "edit-input"
             }, undefined, false, undefined, this),
             /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
               type: "submit",
               className: "btn btn-success",
               disabled: isSubmitting || !editTitle.trim(),
+              "flow-id": "save-button",
               children: "Save"
             }, undefined, false, undefined, this),
             /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
@@ -19475,6 +19492,7 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
   }
   return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
     className: "list-group-item d-flex justify-content-between align-items-center",
+    "flow-id": "todo-item",
     children: [
       /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
         className: "d-flex align-items-center flex-grow-1",
@@ -19499,11 +19517,13 @@ function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
           /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
             className: "btn btn-sm btn-outline-primary",
             onClick: () => setIsEditing(true),
+            "flow-id": "edit-button",
             children: "Edit"
           }, undefined, false, undefined, this),
           /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
             className: "btn btn-sm btn-outline-danger",
             onClick: () => onDelete(todo.id),
+            "flow-id": "delete-button",
             children: "Delete"
           }, undefined, false, undefined, this)
         ]
@@ -19526,7 +19546,7 @@ function TodoForm({ onSubmit }) {
       setIsSubmitting(true);
       await onSubmit(title.trim());
       setTitle("");
-    } catch (err) {} finally {
+    } catch (_err) {} finally {
       setIsSubmitting(false);
     }
   };
@@ -19541,12 +19561,14 @@ function TodoForm({ onSubmit }) {
           placeholder: "Add a new todo...",
           value: title,
           onChange: (e) => setTitle(e.target.value),
-          disabled: isSubmitting
+          disabled: isSubmitting,
+          "flow-id": "new-todo-input"
         }, undefined, false, undefined, this),
         /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
           type: "submit",
           className: "btn btn-primary",
           disabled: isSubmitting || !title.trim(),
+          "flow-id": "add-todo-button",
           children: isSubmitting ? "Adding..." : "Add Todo"
         }, undefined, false, undefined, this)
       ]
@@ -19658,6 +19680,7 @@ function TodoList() {
         children: [
           /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
             className: "list-group mt-4",
+            "flow-id": "todo-list",
             children: todos.map((todo) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(TodoItem, {
               todo,
               onToggle: handleToggle,
@@ -19745,6 +19768,7 @@ function Dashboard() {
                 /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("button", {
                   onClick: handleSignOut,
                   className: "btn btn-outline-secondary btn-sm",
+                  "flow-id": "sign-out-button",
                   children: "Sign Out"
                 }, undefined, false, undefined, this)
               ]
@@ -19758,7 +19782,7 @@ function Dashboard() {
         children: [
           /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("h2", {
             className: "mb-4",
-            children: "My Todos"
+            children: "Dashboard"
           }, undefined, false, undefined, this),
           /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(TodoList, {}, undefined, false, undefined, this)
         ]
@@ -24891,4 +24915,4 @@ if (rootElement) {
   console.error('Root element not found. Make sure there is a <div id="root"></div> in your HTML.');
 }
 
-//# debugId=E4073D34B5093B1A64756E2164756E21
+//# debugId=18F73CFA7F3E66E464756E2164756E21

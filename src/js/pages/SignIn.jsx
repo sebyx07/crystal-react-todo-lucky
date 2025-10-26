@@ -36,6 +36,7 @@ export default function SignIn() {
               <label htmlFor="email" className="form-label">Email</label>
               <input
                 id="email"
+                name="sign_in:email"
                 type="email"
                 className="form-control"
                 value={email}
@@ -48,6 +49,7 @@ export default function SignIn() {
               <label htmlFor="password" className="form-label">Password</label>
               <input
                 id="password"
+                name="sign_in:password"
                 type="password"
                 className="form-control"
                 value={password}
@@ -55,12 +57,12 @@ export default function SignIn() {
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="btn btn-primary w-100">
+            <button type="submit" disabled={loading} className="btn btn-primary w-100" flow-id="sign-in-button">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
           <p className="text-center mt-3 mb-0">
-            Don't have an account? <Link to="/sign-up">Sign Up</Link>
+            Don't have an account? <Link to="/sign-up" flow-id="sign-up-link">Sign Up</Link>
           </p>
         </div>
       </div>

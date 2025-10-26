@@ -20,14 +20,14 @@ export default function Dashboard() {
           </span>
           <div className="d-flex align-items-center">
             <span className="me-3 text-muted">{user?.email}</span>
-            <button onClick={handleSignOut} className="btn btn-outline-secondary btn-sm">
+            <button onClick={handleSignOut} className="btn btn-outline-secondary btn-sm" flow-id="sign-out-button">
               Sign Out
             </button>
           </div>
         </div>
       </nav>
       <main className="container py-4" style={{maxWidth: '800px'}}>
-        <h2 className="mb-4">My Todos</h2>
+        <h2 className="mb-4">Dashboard</h2>
         <TodoList />
       </main>
     </div>

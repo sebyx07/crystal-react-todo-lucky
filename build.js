@@ -64,6 +64,9 @@ async function buildCSS() {
   const proc = Bun.spawn([
     'bun', '--bun', 'sass',
     '--load-path=node_modules',
+    '--silence-deprecation=import',
+    '--silence-deprecation=global-builtin',
+    '--silence-deprecation=color-functions',
     'src/css/app.scss',
     'public/css/app.css',
     isProd ? '--style=compressed' : '--style=expanded'
