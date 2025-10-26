@@ -4,7 +4,7 @@ class Api::Todos::Update < ApiAction
 
     if todo
       SaveTodo.update(todo, params) do |operation, updated_todo|
-        if updated_todo
+        if updated_todo && operation.valid?
           json TodoSerializer.new(updated_todo).render
         else
           json({errors: operation.errors}, status: 422)
