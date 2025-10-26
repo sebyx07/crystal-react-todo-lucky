@@ -17,8 +17,16 @@ bin/spec             # All tests (Crystal + JS)
 bin/spec --crystal   # Crystal only
 bin/spec --js        # Vitest only
 bin/lint             # Format + lint + typecheck
-bin/lint --check     # Check only
+bin/lint --check     # Check only (for CI)
 ```
+
+## CI/CD
+
+GitHub Actions workflow (`.github/workflows/ci.yml`):
+- **Lint job**: Crystal format + ESLint + TypeScript check
+- **Test job**: Frontend (Vitest) + Backend (Crystal spec)
+- Runs on push/PR to any branch
+- Uses Bun 1.3.0 + Crystal 1.18.2
 
 ## Critical Patterns
 

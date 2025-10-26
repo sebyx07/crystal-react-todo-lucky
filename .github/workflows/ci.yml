@@ -1,4 +1,4 @@
-name: crystal_todo_list CI
+name: CI
 
 on:
   push:
@@ -7,46 +7,45 @@ on:
     branches: "*"
 
 jobs:
-  check-format:
-    strategy:
-      fail-fast: false
-      matrix:
-        crystal_version:
-          - 1.18.2
-        experimental:
-          - false
+  lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: ${{ matrix.crystal_version }}
-      - name: Format
-        run: crystal tool format --check
+          crystal: 1.18.2
 
-  specs:
-    strategy:
-      fail-fast: false
-      matrix:
-        crystal_version:
-          - 1.18.2
-        experimental:
-          - false
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.0
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run linter
+        run: bin/lint --check
+
+  test:
+    name: Tests
     runs-on: ubuntu-latest
     env:
       LUCKY_ENV: test
       DB_HOST: localhost
-    continue-on-error: ${{ matrix.experimental }}
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/crystal_todo_list_test
+
     services:
       postgres:
         image: postgres:14-alpine
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: crystal_todo_list_test
         ports:
           - 5432:5432
-       # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -55,34 +54,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: ${{ matrix.crystal_version }}
+          crystal: 1.18.2
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Set up Yarn cache
-        uses: actions/cache@v4
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          bun-version: 1.3.0
 
-      - name: Set up Node cache
+      - name: Cache Crystal dependencies
         uses: actions/cache@v4
-        id: node-cache # use this to check for `cache-hit` (`steps.node-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Set up Crystal cache
-        uses: actions/cache@v4
-        id: crystal-cache
         with:
           path: |
             ~/.cache/crystal
@@ -91,23 +75,34 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-crystal-
 
-      - name: Install shards
-        if: steps.crystal-cache.outputs.cache-hit != 'true'
-        run: shards check || shards install
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-      - name: Install yarn packages
-        if: steps.node-cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile --no-progress
-      - name: Compiling assets
-        run: yarn prod
+      - name: Install Crystal dependencies
+        run: shards install
+
+      - name: Install Bun dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build assets
+        run: bun run build
+
       - name: Build lucky_tasks
         run: crystal build tasks.cr -o ./lucky_tasks
 
-      - name: Prepare database
+      - name: Setup database
         run: |
           ./lucky_tasks db.create
           ./lucky_tasks db.migrate
-          ./lucky_tasks db.seed.required_data
 
       - name: Run tests
-        run: crystal spec 
+        run: |
+          # Run frontend tests
+          bun run test
+          # Run backend tests
+          crystal spec
