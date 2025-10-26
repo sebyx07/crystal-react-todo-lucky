@@ -23,7 +23,42 @@ bin/lint       # Format code
 
 ## Coding Standards
 
-Follow **SOLID principles** and Lucky's conventions:
+### SOLID Principles
+
+This project strictly follows **SOLID** principles:
+
+- **Single Responsibility** - Each class has one reason to change
+  - Actions: Handle HTTP only
+  - Operations: Business logic only
+  - Models: Data structure only
+  - Queries: Database access only
+
+- **Open/Closed** - Use mixins and inheritance, not modification
+  - Example: `include Auth::AllowGuests` to extend behavior
+
+- **Liskov Substitution** - Subtypes are interchangeable
+  - All Actions inherit from `BrowserAction` or `ApiAction`
+
+- **Interface Segregation** - Small, focused interfaces
+  - Separate `BrowserAction` and `ApiAction` for different needs
+
+- **Dependency Inversion** - Depend on abstractions
+  - Operations receive dependencies, don't create them
+
+### Test-Driven Development (TDD)
+
+**Write tests first**, then implementation:
+
+1. Write failing test in `spec/requests/` or `spec/`
+2. Write minimal code to pass
+3. Refactor while keeping tests green
+
+**Test structure:**
+- Use factories for test data (`TodoFactory.create`)
+- Request specs test full stack (routing → action → operation → database)
+- Keep tests fast - database auto-cleaned between tests
+
+### Lucky Conventions
 
 - **Actions** - HTTP routing only, inherit from `BrowserAction` or `ApiAction`
 - **Operations** - Business logic and validations (e.g., `SaveTodo`, `DeleteUser`)
