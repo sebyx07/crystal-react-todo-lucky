@@ -14,6 +14,6 @@ services:
     # volumes:
     #   - /etc/letsencrypt:/etc/letsencrypt:ro
 
-    # Uncomment to expose additional ports
+    # Uncomment to expose additional ports for HTTP fallback
     # ports:
-    #   - 5000:5000  # HTTPS port (if SSL is enabled)
+    #   - 5000:3000  # Map host 5000 to container 3000 (HTTP fallback if SSL enabled)
