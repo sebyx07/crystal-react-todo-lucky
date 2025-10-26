@@ -27,7 +27,7 @@ fi
 if [ "$RUN_JS" = true ]; then
   echo "🧪 Running JavaScript/TypeScript tests..."
   echo ""
-  bun test
+  bun run test
   JS_EXIT=$?
   echo ""
 fi

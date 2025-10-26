@@ -23,6 +23,7 @@ done
 
 CRYSTAL_EXIT=0
 JS_EXIT=0
+TS_EXIT=0
 
 echo "🔍 Running Crystal formatter..."
 
@@ -64,7 +65,19 @@ else
   fi
 fi
 
-# Exit with error if either failed
-if [ $CRYSTAL_EXIT -ne 0 ] || [ $JS_EXIT -ne 0 ]; then
+echo ""
+echo "🔍 Running TypeScript type checker..."
+
+bun tsc --noEmit
+TS_EXIT=$?
+
+if [ $TS_EXIT -eq 0 ]; then
+  echo "✅ TypeScript types are valid"
+else
+  echo "❌ TypeScript type errors found"
+fi
+
+# Exit with error if any failed
+if [ $CRYSTAL_EXIT -ne 0 ] || [ $JS_EXIT -ne 0 ] || [ $TS_EXIT -ne 0 ]; then
   exit 1
 fi

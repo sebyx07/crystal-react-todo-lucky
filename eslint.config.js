@@ -17,6 +17,15 @@ export default [
         fetch: 'readonly',
         alert: 'readonly',
         confirm: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        // Vitest/testing globals
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
       },
     },
     rules: {
