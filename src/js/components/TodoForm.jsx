@@ -12,7 +12,7 @@ export default function TodoForm({ onSubmit }) {
       setIsSubmitting(true);
       await onSubmit(title.trim());
       setTitle('');
-    } catch (err) {
+    } catch (_err) {
       // Error handled by parent
     } finally {
       setIsSubmitting(false);

@@ -38,7 +38,7 @@ describe Api::Todos::Update do
 
     response = ApiClient.auth(user).exec(
       Api::Todos::Update.with(todo.id),
-      todo: {title: "   ", completed: false}  # whitespace only
+      todo: {title: "   ", completed: false} # whitespace only
     )
 
     response.status_code.should eq(422)

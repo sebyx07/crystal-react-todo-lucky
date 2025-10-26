@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const userData = await apiService.getCurrentUser();
           setUser(userData);
-        } catch (error) {
+        } catch (_error) {
           // Token is invalid, clear it
           apiService.clearToken();
         }

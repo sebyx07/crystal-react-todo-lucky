@@ -13,7 +13,7 @@ export default function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
       setIsSubmitting(true);
       await onUpdate(todo.id, editTitle.trim());
       setIsEditing(false);
-    } catch (err) {
+    } catch (_err) {
       // Error handled by parent
     } finally {
       setIsSubmitting(false);

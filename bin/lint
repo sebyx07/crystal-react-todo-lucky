@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Lint and format Crystal code
+# Lint and format Crystal + JavaScript/TypeScript code
 # By default, automatically formats code
 # Use --check to only check without modifying files
 #
 # Usage:
-#   bin/lint              # Format all Crystal files (autocorrect)
+#   bin/lint              # Format all code (autocorrect)
 #   bin/lint --check      # Check formatting without modifying files
 
 CHECK_ONLY=false
@@ -21,22 +21,50 @@ for arg in "$@"; do
   esac
 done
 
+CRYSTAL_EXIT=0
+JS_EXIT=0
+
 echo "🔍 Running Crystal formatter..."
 
 if [ "$CHECK_ONLY" = true ]; then
   echo "   Mode: Check only (no modifications)"
   docker compose run --rm lucky crystal tool format --check src spec
-  EXIT_CODE=$?
+  CRYSTAL_EXIT=$?
 
-  if [ $EXIT_CODE -eq 0 ]; then
-    echo "✅ All files are properly formatted"
+  if [ $CRYSTAL_EXIT -eq 0 ]; then
+    echo "✅ Crystal files are properly formatted"
   else
-    echo "❌ Some files need formatting. Run 'bin/lint' to fix."
+    echo "❌ Some Crystal files need formatting"
   fi
-
-  exit $EXIT_CODE
 else
   echo "   Mode: Auto-format (will modify files)"
   docker compose run --rm lucky crystal tool format src spec
-  echo "✅ Files formatted successfully"
+  echo "✅ Crystal files formatted successfully"
+fi
+
+echo ""
+echo "🔍 Running ESLint for JavaScript/TypeScript..."
+
+if [ "$CHECK_ONLY" = true ]; then
+  bun run lint
+  JS_EXIT=$?
+
+  if [ $JS_EXIT -eq 0 ]; then
+    echo "✅ JS/TS files pass linting"
+  else
+    echo "❌ JS/TS files have linting issues. Run 'bin/lint' or 'bun run lint:fix' to fix."
+  fi
+else
+  bun run lint:fix
+  JS_EXIT=$?
+  if [ $JS_EXIT -eq 0 ]; then
+    echo "✅ JS/TS files linted and fixed"
+  else
+    echo "⚠️  Some JS/TS issues couldn't be auto-fixed"
+  fi
+fi
+
+# Exit with error if either failed
+if [ $CRYSTAL_EXIT -ne 0 ] || [ $JS_EXIT -ne 0 ]; then
+  exit 1
 fi

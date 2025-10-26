@@ -18,8 +18,8 @@ class Api::Todos::Index < ApiAction
       .results
 
     json({
-      todos: todos.map { |todo| TodoSerializer.new(todo).render },
-      pagination: PaginationSerializer.new(paginator).render
+      todos:      todos.map { |todo| TodoSerializer.new(todo).render },
+      pagination: PaginationSerializer.new(paginator).render,
     })
   end
 end
