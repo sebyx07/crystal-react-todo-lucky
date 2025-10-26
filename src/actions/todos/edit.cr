@@ -1,8 +1,6 @@
 class Todos::Edit < BrowserAction
-  include Auth::AllowGuests
-
   get "/todos/:id/edit" do
-    todo = TodoQuery.find(id)
+    todo = TodoQuery.new.user_id(current_user.id).find(id)
     operation = SaveTodo.new(todo)
     html EditPage, operation: operation, todo: todo
   end

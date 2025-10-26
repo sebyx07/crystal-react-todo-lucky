@@ -1,8 +1,6 @@
 class Todos::Update < BrowserAction
-  include Auth::AllowGuests
-
   patch "/todos/:id" do
-    todo = TodoQuery.find(id)
+    todo = TodoQuery.new.user_id(current_user.id).find(id)
     SaveTodo.update(todo, params) do |operation, updated_todo|
       if updated_todo
         flash.success = "Todo updated successfully"

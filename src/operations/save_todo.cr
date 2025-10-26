@@ -5,7 +5,7 @@ class SaveTodo < Todo::SaveOperation
   permit_columns title, completed
 
   before_save do
-    validate_required title
+    validate_required title, user_id
     validate_size_of title, min: 1
     # Set default value for completed if not provided
     completed.value = completed.value || false

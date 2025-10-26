@@ -1,8 +1,6 @@
 class Todos::Show < BrowserAction
-  include Auth::AllowGuests
-
   get "/todos/:id" do
-    todo = TodoQuery.find(id)
+    todo = TodoQuery.new.user_id(current_user.id).find(id)
     html ShowPage, todo: todo
   end
 end

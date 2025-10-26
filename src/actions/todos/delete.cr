@@ -1,8 +1,6 @@
 class Todos::Delete < BrowserAction
-  include Auth::AllowGuests
-
   delete "/todos/:id" do
-    todo = TodoQuery.find(id)
+    todo = TodoQuery.new.user_id(current_user.id).find(id)
     DeleteTodo.delete(todo) do |operation, deleted_todo|
       if deleted_todo
         flash.success = "Todo deleted successfully"

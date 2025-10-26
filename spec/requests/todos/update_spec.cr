@@ -2,15 +2,16 @@ require "../../spec_helper"
 
 describe Todos::Update do
   it "updates a todo with valid params" do
-    todo = TodoFactory.create &.title("Old title").completed(false)
+    user = UserFactory.create
+    todo = TodoFactory.create &.title("Old title").completed(false).user_id(user.id)
 
-    params = {
+    todo_params = {
       "title"     => "Updated title",
       "completed" => "true",
     }
 
     client = ApiClient.new
-    response = client.exec(Todos::Update.with(todo.id), todo: params)
+    response = client.exec(Todos::Update.with(todo.id), todo: todo_params, backdoor_user_id: user.id.to_s)
 
     response.status.should eq(HTTP::Status::FOUND)
 
@@ -20,15 +21,16 @@ describe Todos::Update do
   end
 
   it "updates todo even with empty title" do
-    todo = TodoFactory.create &.title("Valid title")
+    user = UserFactory.create
+    todo = TodoFactory.create &.title("Valid title").user_id(user.id)
 
-    params = {
+    todo_params = {
       "title"     => "Updated",
       "completed" => "true",
     }
 
     client = ApiClient.new
-    response = client.exec(Todos::Update.with(todo.id), todo: params)
+    response = client.exec(Todos::Update.with(todo.id), todo: todo_params, backdoor_user_id: user.id.to_s)
 
     response.status.should eq HTTP::Status::FOUND
 
