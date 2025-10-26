@@ -43,9 +43,8 @@ bin/lint --check     # Check only
 - Factories: `UserFactory.create`, `TodoFactory.create`
 - API specs: `ApiClient.exec(Action, params)`
 - Frontend: Vitest + React Testing Library
-- Integration: LuckyFlow (pending - requires browser in Docker)
 - Import React in JSX for Vitest compatibility
-- flow-id attributes: `flow-id="button-name"` for LuckyFlow selectors
+- flow-id attributes: `flow-id="button-name"` (for future integration tests)
 
 **Build:**
 - `build.js` = Bun bundler script (replaces Webpack)
@@ -97,8 +96,7 @@ src/
 
 spec/
 ├── requests/api/     # API endpoint tests
-├── flows/           # LuckyFlow integration tests (pending - needs browser)
-├── support/flows/   # Flow helpers (TodoFlow, BaseFlow)
+├── flows/           # LuckyFlow integration tests (skipped - needs browser)
 └── src/js/**/*.test.* # Frontend unit tests
 ```
 
