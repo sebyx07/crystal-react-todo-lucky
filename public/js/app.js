@@ -19112,6 +19112,21 @@ class ApiService {
   async getCurrentUser() {
     return this.get("/me");
   }
+  async getTodos(page = 1, perPage = 20) {
+    return this.get(`/todos?page=${page}&per_page=${perPage}`);
+  }
+  async getTodo(id) {
+    return this.get(`/todos/${id}`);
+  }
+  async createTodo(title, completed = false) {
+    return this.post("/todos", { todo: { title, completed } });
+  }
+  async updateTodo(id, title, completed) {
+    return this.patch(`/todos/${id}`, { todo: { title, completed } });
+  }
+  async deleteTodo(id) {
+    return this.delete(`/todos/${id}`);
+  }
 }
 var apiService = new ApiService;
 
@@ -19398,8 +19413,304 @@ function SignUp() {
   }, undefined, false, undefined, this);
 }
 
-// src/js/pages/Dashboard.jsx
+// src/js/components/TodoList.jsx
+var import_react6 = __toESM(require_react(), 1);
+
+// src/js/components/TodoItem.jsx
+var import_react4 = __toESM(require_react(), 1);
 var jsx_dev_runtime4 = __toESM(require_jsx_dev_runtime(), 1);
+function TodoItem({ todo, onToggle, onUpdate, onDelete }) {
+  const [isEditing, setIsEditing] = import_react4.useState(false);
+  const [editTitle, setEditTitle] = import_react4.useState(todo.title);
+  const [isSubmitting, setIsSubmitting] = import_react4.useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!editTitle.trim())
+      return;
+    try {
+      setIsSubmitting(true);
+      await onUpdate(todo.id, editTitle.trim());
+      setIsEditing(false);
+    } catch (err) {} finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleCancel = () => {
+    setEditTitle(todo.title);
+    setIsEditing(false);
+  };
+  if (isEditing) {
+    return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+      className: "list-group-item",
+      children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("form", {
+        onSubmit: handleSubmit,
+        children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+          className: "input-group",
+          children: [
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("input", {
+              type: "text",
+              className: "form-control",
+              value: editTitle,
+              onChange: (e) => setEditTitle(e.target.value),
+              disabled: isSubmitting,
+              autoFocus: true
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+              type: "submit",
+              className: "btn btn-success",
+              disabled: isSubmitting || !editTitle.trim(),
+              children: "Save"
+            }, undefined, false, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+              type: "button",
+              className: "btn btn-secondary",
+              onClick: handleCancel,
+              disabled: isSubmitting,
+              children: "Cancel"
+            }, undefined, false, undefined, this)
+          ]
+        }, undefined, true, undefined, this)
+      }, undefined, false, undefined, this)
+    }, undefined, false, undefined, this);
+  }
+  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+    className: "list-group-item d-flex justify-content-between align-items-center",
+    children: [
+      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+        className: "d-flex align-items-center flex-grow-1",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("input", {
+            type: "checkbox",
+            className: "form-check-input me-3",
+            checked: todo.completed,
+            onChange: () => onToggle(todo.id, todo.completed)
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
+            className: `flex-grow-1 ${todo.completed ? "text-decoration-line-through text-muted" : ""}`,
+            style: { cursor: "pointer" },
+            onClick: () => setIsEditing(true),
+            children: todo.title
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+        className: "btn-group",
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+            className: "btn btn-sm btn-outline-primary",
+            onClick: () => setIsEditing(true),
+            children: "Edit"
+          }, undefined, false, undefined, this),
+          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+            className: "btn btn-sm btn-outline-danger",
+            onClick: () => onDelete(todo.id),
+            children: "Delete"
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// src/js/components/TodoForm.jsx
+var import_react5 = __toESM(require_react(), 1);
+var jsx_dev_runtime5 = __toESM(require_jsx_dev_runtime(), 1);
+function TodoForm({ onSubmit }) {
+  const [title, setTitle] = import_react5.useState("");
+  const [isSubmitting, setIsSubmitting] = import_react5.useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title.trim())
+      return;
+    try {
+      setIsSubmitting(true);
+      await onSubmit(title.trim());
+      setTitle("");
+    } catch (err) {} finally {
+      setIsSubmitting(false);
+    }
+  };
+  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("form", {
+    onSubmit: handleSubmit,
+    children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+      className: "input-group",
+      children: [
+        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("input", {
+          type: "text",
+          className: "form-control",
+          placeholder: "Add a new todo...",
+          value: title,
+          onChange: (e) => setTitle(e.target.value),
+          disabled: isSubmitting
+        }, undefined, false, undefined, this),
+        /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("button", {
+          type: "submit",
+          className: "btn btn-primary",
+          disabled: isSubmitting || !title.trim(),
+          children: isSubmitting ? "Adding..." : "Add Todo"
+        }, undefined, false, undefined, this)
+      ]
+    }, undefined, true, undefined, this)
+  }, undefined, false, undefined, this);
+}
+
+// src/js/components/TodoList.jsx
+var jsx_dev_runtime6 = __toESM(require_jsx_dev_runtime(), 1);
+function TodoList() {
+  const [todos, setTodos] = import_react6.useState([]);
+  const [loading, setLoading] = import_react6.useState(true);
+  const [error, setError] = import_react6.useState("");
+  const [page, setPage] = import_react6.useState(1);
+  const [pagination, setPagination] = import_react6.useState(null);
+  const fetchTodos = async (pageNum = 1) => {
+    try {
+      setLoading(true);
+      const data2 = await apiService.getTodos(pageNum);
+      setTodos(data2.todos);
+      setPagination(data2.pagination);
+      setPage(pageNum);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to load todos");
+    } finally {
+      setLoading(false);
+    }
+  };
+  import_react6.useEffect(() => {
+    fetchTodos();
+  }, []);
+  const handleCreate = async (title) => {
+    try {
+      const newTodo = await apiService.createTodo(title);
+      setTodos([newTodo, ...todos]);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to create todo");
+      throw err;
+    }
+  };
+  const handleToggle = async (id, completed) => {
+    try {
+      const todo = todos.find((t) => t.id === id);
+      const updated = await apiService.updateTodo(id, todo.title, !completed);
+      setTodos(todos.map((t) => t.id === id ? updated : t));
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to update todo");
+    }
+  };
+  const handleUpdate = async (id, title) => {
+    try {
+      const todo = todos.find((t) => t.id === id);
+      const updated = await apiService.updateTodo(id, title, todo.completed);
+      setTodos(todos.map((t) => t.id === id ? updated : t));
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to update todo");
+      throw err;
+    }
+  };
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this todo?"))
+      return;
+    try {
+      await apiService.deleteTodo(id);
+      setTodos(todos.filter((t) => t.id !== id));
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to delete todo");
+    }
+  };
+  if (loading && todos.length === 0) {
+    return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+      className: "text-center py-5",
+      children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+        className: "spinner-border",
+        role: "status",
+        children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+          className: "visually-hidden",
+          children: "Loading..."
+        }, undefined, false, undefined, this)
+      }, undefined, false, undefined, this)
+    }, undefined, false, undefined, this);
+  }
+  return /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+    children: [
+      error && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+        className: "alert alert-danger alert-dismissible fade show",
+        role: "alert",
+        children: [
+          error,
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+            type: "button",
+            className: "btn-close",
+            onClick: () => setError("")
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this),
+      /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(TodoForm, {
+        onSubmit: handleCreate
+      }, undefined, false, undefined, this),
+      todos.length === 0 ? /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+        className: "alert alert-info mt-4",
+        children: "No todos yet. Create one to get started!"
+      }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(jsx_dev_runtime6.Fragment, {
+        children: [
+          /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("div", {
+            className: "list-group mt-4",
+            children: todos.map((todo) => /* @__PURE__ */ jsx_dev_runtime6.jsxDEV(TodoItem, {
+              todo,
+              onToggle: handleToggle,
+              onUpdate: handleUpdate,
+              onDelete: handleDelete
+            }, todo.id, false, undefined, this))
+          }, undefined, false, undefined, this),
+          pagination && pagination.total_pages > 1 && /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("nav", {
+            className: "mt-4",
+            children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("ul", {
+              className: "pagination justify-content-center",
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                  className: `page-item ${!pagination.previous_page ? "disabled" : ""}`,
+                  children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                    className: "page-link",
+                    onClick: () => fetchTodos(page - 1),
+                    disabled: !pagination.previous_page,
+                    children: "Previous"
+                  }, undefined, false, undefined, this)
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                  className: "page-item disabled",
+                  children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("span", {
+                    className: "page-link",
+                    children: [
+                      "Page ",
+                      page,
+                      " of ",
+                      pagination.total_pages
+                    ]
+                  }, undefined, true, undefined, this)
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("li", {
+                  className: `page-item ${!pagination.next_page ? "disabled" : ""}`,
+                  children: /* @__PURE__ */ jsx_dev_runtime6.jsxDEV("button", {
+                    className: "page-link",
+                    onClick: () => fetchTodos(page + 1),
+                    disabled: !pagination.next_page,
+                    children: "Next"
+                  }, undefined, false, undefined, this)
+                }, undefined, false, undefined, this)
+              ]
+            }, undefined, true, undefined, this)
+          }, undefined, false, undefined, this)
+        ]
+      }, undefined, true, undefined, this)
+    ]
+  }, undefined, true, undefined, this);
+}
+
+// src/js/pages/Dashboard.jsx
+var jsx_dev_runtime7 = __toESM(require_jsx_dev_runtime(), 1);
 function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -19407,29 +19718,31 @@ function Dashboard() {
     await signOut();
     navigate("/sign-in");
   };
-  return /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+  return /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
     className: "container-fluid",
     children: [
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("nav", {
-        className: "navbar navbar-expand-lg navbar-light bg-light border-bottom",
-        children: /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("nav", {
+        className: "navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm",
+        children: /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
           className: "container-fluid",
           children: [
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-              className: "navbar-brand",
-              children: "Todo App"
-            }, undefined, false, undefined, this),
-            /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("div", {
+            /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("span", {
+              className: "navbar-brand mb-0 h1",
+              children: [
+                /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("i", {
+                  className: "bi bi-check2-square"
+                }, undefined, false, undefined, this),
+                " Todo App"
+              ]
+            }, undefined, true, undefined, this),
+            /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("div", {
               className: "d-flex align-items-center",
               children: [
-                /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("span", {
-                  className: "me-3",
-                  children: [
-                    "Welcome, ",
-                    user?.email
-                  ]
-                }, undefined, true, undefined, this),
-                /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("button", {
+                /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("span", {
+                  className: "me-3 text-muted",
+                  children: user?.email
+                }, undefined, false, undefined, this),
+                /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("button", {
                   onClick: handleSignOut,
                   className: "btn btn-outline-secondary btn-sm",
                   children: "Sign Out"
@@ -19439,17 +19752,15 @@ function Dashboard() {
           ]
         }, undefined, true, undefined, this)
       }, undefined, false, undefined, this),
-      /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("main", {
+      /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("main", {
         className: "container py-4",
+        style: { maxWidth: "800px" },
         children: [
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("h2", {
+          /* @__PURE__ */ jsx_dev_runtime7.jsxDEV("h2", {
             className: "mb-4",
-            children: "Todo List"
+            children: "My Todos"
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime4.jsxDEV("p", {
-            className: "text-muted",
-            children: "Todo list functionality coming soon..."
-          }, undefined, false, undefined, this)
+          /* @__PURE__ */ jsx_dev_runtime7.jsxDEV(TodoList, {}, undefined, false, undefined, this)
         ]
       }, undefined, true, undefined, this)
     ]
@@ -24511,59 +24822,59 @@ enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
 
 // src/js/app.tsx
-var jsx_dev_runtime5 = __toESM(require_jsx_dev_runtime(), 1);
+var jsx_dev_runtime8 = __toESM(require_jsx_dev_runtime(), 1);
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) {
-    return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
       children: "Loading..."
     }, undefined, false, undefined, this);
   }
-  return isAuthenticated ? /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(jsx_dev_runtime5.Fragment, {
+  return isAuthenticated ? /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(jsx_dev_runtime8.Fragment, {
     children
-  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Navigate, {
+  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Navigate, {
     to: "/sign-in"
   }, undefined, false, undefined, this);
 }
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) {
-    return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV("div", {
+    return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV("div", {
       children: "Loading..."
     }, undefined, false, undefined, this);
   }
-  return !isAuthenticated ? /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(jsx_dev_runtime5.Fragment, {
+  return !isAuthenticated ? /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(jsx_dev_runtime8.Fragment, {
     children
-  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Navigate, {
+  }, undefined, false, undefined, this) : /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Navigate, {
     to: "/dashboard"
   }, undefined, false, undefined, this);
 }
 function App() {
-  return /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(BrowserRouter, {
-    children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(AuthProvider, {
-      children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Routes, {
+  return /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(BrowserRouter, {
+    children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(AuthProvider, {
+      children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Routes, {
         children: [
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Route, {
+          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
             path: "/sign-in",
-            element: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(PublicRoute, {
-              children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(SignIn, {}, undefined, false, undefined, this)
+            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(PublicRoute, {
+              children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SignIn, {}, undefined, false, undefined, this)
             }, undefined, false, undefined, this)
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Route, {
+          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
             path: "/sign-up",
-            element: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(PublicRoute, {
-              children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(SignUp, {}, undefined, false, undefined, this)
+            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(PublicRoute, {
+              children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(SignUp, {}, undefined, false, undefined, this)
             }, undefined, false, undefined, this)
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Route, {
+          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
             path: "/dashboard",
-            element: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(ProtectedRoute, {
-              children: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Dashboard, {}, undefined, false, undefined, this)
+            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(ProtectedRoute, {
+              children: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Dashboard, {}, undefined, false, undefined, this)
             }, undefined, false, undefined, this)
           }, undefined, false, undefined, this),
-          /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Route, {
+          /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Route, {
             path: "/",
-            element: /* @__PURE__ */ jsx_dev_runtime5.jsxDEV(Navigate, {
+            element: /* @__PURE__ */ jsx_dev_runtime8.jsxDEV(Navigate, {
               to: "/dashboard"
             }, undefined, false, undefined, this)
           }, undefined, false, undefined, this)
@@ -24575,9 +24886,9 @@ function App() {
 var rootElement = document.getElementById("root");
 if (rootElement) {
   const root = import_client.createRoot(rootElement);
-  root.render(/* @__PURE__ */ jsx_dev_runtime5.jsxDEV(App, {}, undefined, false, undefined, this));
+  root.render(/* @__PURE__ */ jsx_dev_runtime8.jsxDEV(App, {}, undefined, false, undefined, this));
 } else {
   console.error('Root element not found. Make sure there is a <div id="root"></div> in your HTML.');
 }
 
-//# debugId=80C22CF7552315E964756E2164756E21
+//# debugId=E4073D34B5093B1A64756E2164756E21

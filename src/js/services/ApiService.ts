@@ -110,6 +110,27 @@ export class ApiService {
   async getCurrentUser(): Promise<any> {
     return this.get('/me');
   }
+
+  // Todo methods
+  async getTodos(page: number = 1, perPage: number = 20): Promise<any> {
+    return this.get(`/todos?page=${page}&per_page=${perPage}`);
+  }
+
+  async getTodo(id: number): Promise<any> {
+    return this.get(`/todos/${id}`);
+  }
+
+  async createTodo(title: string, completed: boolean = false): Promise<any> {
+    return this.post('/todos', { todo: { title, completed } });
+  }
+
+  async updateTodo(id: number, title: string, completed: boolean): Promise<any> {
+    return this.patch(`/todos/${id}`, { todo: { title, completed } });
+  }
+
+  async deleteTodo(id: number): Promise<any> {
+    return this.delete(`/todos/${id}`);
+  }
 }
 
 // Export singleton instance
