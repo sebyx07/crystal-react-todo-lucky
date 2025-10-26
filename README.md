@@ -1,23 +1,37 @@
-# Crystal Todo List
+# 💎 Crystal Todo List
 
-A todo list application built with [Lucky Framework](https://luckyframework.org) and Crystal programming language.
+A modern todo list application built with [Lucky Framework](https://luckyframework.org), Crystal, and React.
 
-## Features
+## ✨ Features
 
-- Create, Read, Update, and Delete (CRUD) todos
-- Mark todos as completed/pending
-- PostgreSQL database
-- Full test coverage with specs
-- Docker support for development
+- ✅ Full CRUD operations for todos
+- 🔄 Mark todos as completed/pending
+- 📝 Edit todos inline
+- 🔐 User authentication (JWT + Sessions)
+- ⚡ React 19 SPA with React Compiler optimization
+- 🎨 Bootstrap 5 UI
+- 🗄️ PostgreSQL database
+- 🧪 Full test coverage (Frontend + Backend)
+- 🐳 Docker support for development
+- 🔒 Optional SSL/TLS support
 
-### Setting up the project
+## 🚀 Tech Stack
+
+- **Backend:** Crystal 1.18.2 + Lucky Framework 1.4.0
+- **Frontend:** React 19 + TypeScript + React Compiler
+- **Database:** PostgreSQL 14
+- **Runtime:** Bun v1.3.1 (assets & tests)
+- **Styling:** Bootstrap 5 + Sass
+- **Testing:** Crystal Spec + Vitest + React Testing Library
+
+### 🛠️ Setting up the project
 
 1. [Install required dependencies](https://luckyframework.org/guides/getting-started/installing#install-required-dependencies)
 1. Update database settings in `config/database.cr`
 1. Run `script/setup`
 1. Run `lucky dev` to start the app
 
-### Using Docker for development (Recommended)
+### 🐳 Using Docker for development (Recommended)
 
 All development and testing is done via Docker Compose for consistency.
 
@@ -25,48 +39,52 @@ All development and testing is done via Docker Compose for consistency.
 ```bash
 bin/dev
 ```
-The app will be available at `http://localhost:3000`
+The app will be available at `http://localhost:3000` (or `https://localhost:3000` with SSL)
 
 **Run tests:**
 ```bash
-bin/spec                              # Run all specs
+bin/spec                              # Run all specs (Backend + Frontend)
 bin/spec spec/requests/todos/         # Run specs in directory
 bin/spec spec/requests/todos/index_spec.cr  # Run specific file
 ```
 
-**Format code:**
+**Format & lint code:**
 ```bash
-bin/lint              # Auto-format all Crystal files
+bin/lint              # Auto-format all files (Crystal + JS/TS)
 bin/lint --check      # Check formatting without modifying
 ```
 
-### Database
+### 🗄️ Database
 
 PostgreSQL runs in Docker via `docker compose`:
 - **Not exposed to host** (secure by default)
 - **Accessed via container network only**
 - Automatically managed by bin scripts
 
-### Environment Configuration
+### ⚙️ Environment Configuration
 
 The application uses `.env.development.local` for local development settings:
 - APP_DOMAIN: dev-1.venom.is (for production SSL)
 - PORT: 5000 (container-to-container port)
 - DATABASE_URL: Automatically set by bin scripts
 
-### API Endpoints
+For SSL/TLS configuration, see [docs/ssl-setup.md](docs/ssl-setup.md)
 
-- `GET /` - Redirects to todos list
-- `GET /todos` - List all todos
-- `GET /todos/new` - New todo form
-- `POST /todos` - Create a new todo
-- `GET /todos/:id` - Show a specific todo
-- `GET /todos/:id/edit` - Edit todo form
-- `PATCH /todos/:id` - Update a todo
-- `DELETE /todos/:id` - Delete a todo
+### 🌐 API Endpoints
+
+**Authentication:**
+- `POST /api/sign_ins` - Sign in (returns JWT token)
+- `POST /api/sign_ups` - Create account
+- `DELETE /api/sign_ins` - Sign out
+
+**Todos:**
+- `GET /api/todos` - List todos (paginated, sorted by updated_at desc)
+- `POST /api/todos` - Create a new todo
+- `PATCH /api/todos/:id` - Update a todo
+- `DELETE /api/todos/:id` - Delete a todo
 
 
-### VSCode / code-server Setup
+### 💻 VSCode / code-server Setup
 
 The project includes full VSCode/code-server configuration:
 
@@ -100,6 +118,6 @@ This configures:
 - `.vscode/extensions.json` - Recommended extensions
 - `.editorconfig` - Cross-editor formatting
 
-### Learning Lucky
+## 📚 Learning Resources
 
 Lucky uses the [Crystal](https://crystal-lang.org) programming language. You can learn about Lucky from the [Lucky Guides](https://luckyframework.org/guides/getting-started/why-lucky).
