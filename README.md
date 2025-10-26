@@ -24,32 +24,31 @@ A modern todo list application built with [Lucky Framework](https://luckyframewo
 - **Styling:** Bootstrap 5 + Sass
 - **Testing:** Crystal Spec + Vitest + React Testing Library
 
-### 🛠️ Setting up the project
+### 🛠️ Quick Start (Docker - Recommended)
 
-1. [Install required dependencies](https://luckyframework.org/guides/getting-started/installing#install-required-dependencies)
-1. Update database settings in `config/database.cr`
-1. Run `script/setup`
-1. Run `lucky dev` to start the app
+All development is done via Docker Compose using the `bin/` scripts:
 
-### 🐳 Using Docker for development (Recommended)
-
-All development and testing is done via Docker Compose for consistency.
-
-**Start development server:**
 ```bash
+# Start the development server (includes database setup)
 bin/dev
 ```
-The app will be available at `http://localhost:3000` (or `https://localhost:3000` with SSL)
 
-**Run tests:**
+That's it! The app will be available at `http://localhost:3000` (or `https://localhost:3000` with SSL)
+
+### 🐳 Available Commands
+
+All scripts automatically handle Docker Compose for you:
+
 ```bash
-bin/spec                              # Run all specs (Backend + Frontend)
+# Development
+bin/dev               # Start development server with hot reload
+
+# Testing
+bin/spec              # Run all specs (Backend + Frontend)
 bin/spec spec/requests/todos/         # Run specs in directory
 bin/spec spec/requests/todos/index_spec.cr  # Run specific file
-```
 
-**Format & lint code:**
-```bash
+# Linting & Formatting
 bin/lint              # Auto-format all files (Crystal + JS/TS)
 bin/lint --check      # Check formatting without modifying
 ```
