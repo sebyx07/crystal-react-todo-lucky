@@ -2,23 +2,27 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "@rails/ujs": "^7.1.0",
-    "modern-normalize": "^2.0.0"
+    "bootstrap": "^5.3.8",
+    "modern-normalize": "^2.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.4"
   },
   "scripts": {
     "heroku-postbuild": "bun run prod",
-    "dev": "bun run mix",
-    "watch": "bun run mix watch",
-    "prod": "bun run mix --production"
+    "dev": "bun build.js --watch",
+    "build": "bun build.js",
+    "prod": "bun build.js --production"
   },
   "devDependencies": {
-    "@babel/compat-data": "^7.23.5",
-    "browser-sync": "^2.29.3",
-    "compression-webpack-plugin": "^10.0.0",
-    "laravel-mix": "^6.0.49",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "postcss": "^8.4.32",
-    "resolve-url-loader": "^5.0.0",
     "sass": "^1.69.5",
-    "sass-loader": "^13.3.2"
+    "typescript": "^5.9.3"
   }
 }
